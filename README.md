@@ -1,6 +1,6 @@
 # 🗳️ College Voting Portal
 
-A full-stack, secure online voting system for college elections. Built with **FastAPI**, **PostgreSQL**, **React**, and **Vite** — supports student registration, candidate applications, election scheduling, real-time results, and an admin dashboard.
+A full-stack, secure online voting system for college elections. Built with **FastAPI**, **PostgreSQL**, **React**, and **Vite** — supports student registration, candidate applications, election scheduling, real-time results and an admin dashboard.
 
 ---
 
