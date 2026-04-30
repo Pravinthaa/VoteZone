@@ -1,9 +1,9 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Enum as SqlEnum
 from sqlalchemy.orm import relationship
-from sqlalchemy import Enum
+from enum import Enum
 from db.base import Base
 
-class CandidateStatus(enum.Enum):
+class CandidateStatus(Enum):
     pending = "pending"
     approved = "approved"
     rejected = "rejected"
@@ -17,7 +17,7 @@ class Candidate(Base):
     post = Column(String, nullable=False)
     resume_path = Column(String, nullable=True)
     photo_path = Column(String, nullable=True)
-    status = Column(Enum(CandidateStatus), default=CandidateStatus.pending)
+    status = Column(SqlEnum(CandidateStatus), default=CandidateStatus.pending)
 
     student = relationship("Student", back_populates="candidate_profile")
     election = relationship("Election", back_populates="candidates")
