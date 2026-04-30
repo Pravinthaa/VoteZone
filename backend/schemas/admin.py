@@ -1,13 +1,20 @@
 from pydantic import BaseModel
+from datetime import datetime
 
-
-class AdminBase(BaseModel):
+class AdminCreate(BaseModel):
     username: str
-
-class AdminCreate(AdminBase):
     password: str
 
-class AdminOut(AdminBase):
+class AdminLogin(BaseModel):
+    username: str
+    password: str
+
+class AdminOut(BaseModel):
     id: int
+    username: str
     class Config:
         orm_mode = True
+
+class ElectionDurationUpdate(BaseModel):
+    start_time: datetime
+    end_time: datetime

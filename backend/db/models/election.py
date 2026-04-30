@@ -7,6 +7,7 @@ class ElectionStatus(Enum):
     upcoming = "upcoming"
     active = "active"
     completed = "completed"
+    stopped = "stopped" 
 
 class Election(Base):
     __tablename__ = "elections"
