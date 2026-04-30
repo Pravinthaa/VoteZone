@@ -1,0 +1,18 @@
+# Core framework
+fastapi
+uvicorn[standard]
+
+# Database + ORM
+sqlalchemy
+psycopg2-binary   # Postgres driver
+alembic           # Migrations
+
+# Authentication + Security
+python-jose[cryptography]   # JWT handling
+passlib[bcrypt]             # Password hashing
+
+# Data validation
+pydantic
+
+# Utilities
+python-dotenv     # Load .env files
