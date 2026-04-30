@@ -1,15 +1,17 @@
 from pydantic import BaseModel
 
-class VoteCreate(BaseModel):
-    student_id: int
-    candidate_id: int
-    election_id: int
+class VoteBase(BaseModel):
+    post: str
 
-class VoteOut(BaseModel):
+class VoteCreate(VoteBase):
+    student_id: int
+    election_id: int
+    candidate_id: int
+
+class VoteOut(VoteBase):
     id: int
     student_id: int
-    candidate_id: int
     election_id: int
-
+    candidate_id: int
     class Config:
         orm_mode = True

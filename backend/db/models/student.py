@@ -1,4 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Boolean
+from sqlalchemy.orm import relationship
+
 from db.base import Base
 
 class Student(Base):
@@ -9,3 +12,7 @@ class Student(Base):
     year = Column(Integer)
     email = Column(String, unique=True, index=True)
     password_hash = Column(String)
+    is_candidate = Column(Boolean, default=False)
+
+    votes = relationship("Vote", back_populates="student")
+    candidate_profile = relationship("Candidate", back_populates="student", uselist=False)

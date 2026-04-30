@@ -1,16 +1,19 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 
-class ElectionCreate(BaseModel):
+class ElectionBase(BaseModel):
     name: str
     start_time: datetime
     end_time: datetime
 
-class ElectionOut(BaseModel):
+class ElectionCreate(ElectionBase):
+    pass
+
+class ElectionOut(ElectionBase):
     id: int
-    name: str
-    start_time: datetime
-    end_time: datetime
-
+    status: str
+    results_status: str
+    publish_date: Optional[datetime]
     class Config:
         orm_mode = True

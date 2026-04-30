@@ -1,13 +1,17 @@
 from pydantic import BaseModel
+from typing import Optional
 
-class CandidateCreate(BaseModel):
+class CandidateBase(BaseModel):
+    post: str
+    resume_path: Optional[str] = None
+    photo_path: Optional[str] = None
+
+class CandidateCreate(CandidateBase):
     student_id: int
-    position: str
+    election_id: int
 
-class CandidateOut(BaseModel):
+class CandidateOut(CandidateBase):
     id: int
-    student_id: int
-    position: str
-
+    status: str
     class Config:
         orm_mode = True

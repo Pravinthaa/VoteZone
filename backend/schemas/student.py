@@ -1,16 +1,16 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+from typing import Optional
 
-class StudentCreate(BaseModel):
-    email: str
+class StudentBase(BaseModel):
+    name: str
+    year: int
+    email: EmailStr
+
+class StudentCreate(StudentBase):
     password: str
-    name: str
-    year: int
 
-class StudentOut(BaseModel):
+class StudentOut(StudentBase):
     id: int
-    email: str
-    name: str
-    year: int
-
+    is_candidate: bool
     class Config:
         orm_mode = True

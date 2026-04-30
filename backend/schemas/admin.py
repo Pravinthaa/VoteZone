@@ -1,12 +1,13 @@
 from pydantic import BaseModel
 
-class AdminCreate(BaseModel):
+
+class AdminBase(BaseModel):
     username: str
+
+class AdminCreate(AdminBase):
     password: str
 
-class AdminOut(BaseModel):
+class AdminOut(AdminBase):
     id: int
-    username: str
-
     class Config:
         orm_mode = True
