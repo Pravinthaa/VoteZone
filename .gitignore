@@ -1,5 +1,7 @@
 __pycache__
-
 .env
-
+backend/.env
+alembic.ini
+backend/alembic.ini
+venv/
 node_modules/
