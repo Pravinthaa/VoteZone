@@ -15,5 +15,6 @@ class VoteOut(VoteBase):
     election_id: int
     candidate_id: int
     timestamp: datetime
+
     class Config:
-        orm_mode = True
+        from_attributes = True   

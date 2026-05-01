@@ -12,8 +12,9 @@ class AdminLogin(BaseModel):
 class AdminOut(BaseModel):
     id: int
     username: str
+
     class Config:
-        orm_mode = True
+        from_attributes = True   
 
 class ElectionDurationUpdate(BaseModel):
     start_time: datetime

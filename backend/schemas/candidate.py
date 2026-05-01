@@ -13,5 +13,6 @@ class CandidateCreate(CandidateBase):
 class CandidateOut(CandidateBase):
     id: int
     status: str
+
     class Config:
-        orm_mode = True
+        from_attributes = True  
