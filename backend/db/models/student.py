@@ -9,6 +9,7 @@ class Student(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name= Column(String, index=True)
+    roll_no = Column(String, unique=True, index=True)
     year = Column(Integer)
     email = Column(String, unique=True, index=True)
     password_hash = Column(String)

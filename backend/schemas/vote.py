@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 class VoteBase(BaseModel):
     post: str
@@ -13,5 +14,6 @@ class VoteOut(VoteBase):
     student_id: int
     election_id: int
     candidate_id: int
+    timestamp: datetime
     class Config:
         orm_mode = True

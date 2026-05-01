@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy import Column, Integer, ForeignKey, DateTime
+import datetime
 from sqlalchemy.orm import relationship
 from sqlalchemy import String
 from sqlalchemy import UniqueConstraint
@@ -12,6 +13,7 @@ class Vote(Base):
     election_id = Column(Integer, ForeignKey("elections.id"))
     candidate_id = Column(Integer, ForeignKey("candidates.id"))
     post = Column(String, nullable=False)
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
 
     student = relationship("Student", back_populates="votes")
     election = relationship("Election", back_populates="votes")
