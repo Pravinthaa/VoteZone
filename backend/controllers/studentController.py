@@ -27,7 +27,13 @@ def login_student(data: StudentLogin, db: Session):
     student = db.query(Student).filter(Student.roll_no == data.roll_no).first()
     if not student or not verify_password(data.password, student.password_hash):
         raise HTTPException(status_code=400, detail="Invalid credentials")
-    token = create_access_token({"sub": student.roll_no, "role": "student"})
+
+    # Add id into the payload
+    token = create_access_token({
+        "id": student.id,
+        "sub": student.roll_no,
+        "role": "student"
+    })
     return {"access_token": token, "token_type": "bearer"}
 
 def get_student(id: int, db: Session):
