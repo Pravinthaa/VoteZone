@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import './Login.css';
 
-const API_URL = 'http://127.0.0.1:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
 const CanvasBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
