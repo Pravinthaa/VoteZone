@@ -9,10 +9,16 @@ alembic           # Migrations
 
 # Authentication + Security
 python-jose[cryptography]   # JWT handling
-passlib[bcrypt]             # Password hashing
+passlib[argon2]             # Password hashing
 
 # Data validation
 pydantic
+pydantic[email]             # For EmailStr support
+pydantic-settings           # For BaseSettings
+
+# Background Tasks
+celery
+redis
 
 # Utilities
 python-dotenv     # Load .env files
