@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from core.middleware import setup_cors, log_requests
 from db.base import Base
 from db.session import engine
-from routes import studentRoutes, adminRoutes
+from routes import studentRoutes, adminRoutes, electionRoutes
 
 app = FastAPI(title="College Voting System")
 
@@ -21,6 +21,7 @@ def init_db():
 # ✅ Mount routers
 app.include_router(studentRoutes.router)
 app.include_router(adminRoutes.router)
+app.include_router(electionRoutes.router)
 
 # ✅ Health check endpoint
 @app.get("/")

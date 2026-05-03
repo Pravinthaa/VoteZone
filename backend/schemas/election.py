@@ -6,6 +6,7 @@ class ElectionBase(BaseModel):
     name: str
     start_time: datetime
     end_time: datetime
+    posts: list[str] = []
 
 class ElectionCreate(ElectionBase):
     pass
