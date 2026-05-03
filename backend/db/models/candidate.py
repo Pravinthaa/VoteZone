@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Enum as SqlEnum
+from sqlalchemy import Column, Integer, String, ForeignKey, Enum as SqlEnum, UniqueConstraint
 from sqlalchemy.orm import relationship
 from enum import Enum
 from db.base import Base
@@ -12,7 +12,7 @@ class Candidate(Base):
     __tablename__ = "candidates"
 
     id = Column(Integer, primary_key=True, index=True)
-    student_id = Column(Integer, ForeignKey("students.id"), unique=True)
+    student_id = Column(Integer, ForeignKey("students.id"))
     election_id = Column(Integer, ForeignKey("elections.id"))
     post = Column(String, nullable=False)
     resume_path = Column(String, nullable=True)
@@ -21,3 +21,7 @@ class Candidate(Base):
 
     student = relationship("Student", back_populates="candidate_profile")
     election = relationship("Election", back_populates="candidates")
+
+    __table_args__ = (
+        UniqueConstraint("student_id", "election_id", name="unique_candidate_per_election"),
+    )
