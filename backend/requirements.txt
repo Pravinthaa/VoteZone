@@ -15,6 +15,7 @@ passlib[argon2]             # Password hashing
 pydantic
 pydantic[email]             # For EmailStr support
 pydantic-settings           # For BaseSettings
+python-multipart            # For Form and UploadFile
 
 # Background Tasks
 celery

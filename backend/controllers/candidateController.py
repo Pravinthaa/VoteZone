@@ -67,3 +67,15 @@ def get_candidates_for_election(db: Session, election_id: int):
         Candidate.status == CandidateStatus.approved
     ).all()
     return candidates
+
+def get_pending_candidates(db: Session):
+    return db.query(Candidate).filter(Candidate.status == CandidateStatus.pending).all()
+
+def approve_candidate(db: Session, candidate_id: int):
+    candidate = db.query(Candidate).filter(Candidate.id == candidate_id).first()
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    candidate.status = CandidateStatus.approved
+    db.commit()
+    db.refresh(candidate)
+    return candidate

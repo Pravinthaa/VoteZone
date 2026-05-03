@@ -2,11 +2,19 @@ from fastapi import APIRouter, Depends, Form, UploadFile, File
 from sqlalchemy.orm import Session
 from db.session import get_db
 from schemas.candidate import CandidateOut
-from controllers.candidateController import apply_as_candidate, get_candidates_for_election
+from controllers.candidateController import apply_as_candidate, get_candidates_for_election, get_pending_candidates, approve_candidate
 from core.middleware import require_role
 from typing import List
 
 router = APIRouter(prefix="/candidates", tags=["Candidates"])
+
+@router.get("/pending", response_model=List[CandidateOut])
+def pending_candidates(db: Session = Depends(get_db), user=Depends(require_role("admin"))):
+    return get_pending_candidates(db)
+
+@router.put("/{candidate_id}/approve", response_model=CandidateOut)
+def approve(candidate_id: int, db: Session = Depends(get_db), user=Depends(require_role("admin"))):
+    return approve_candidate(db, candidate_id)
 
 @router.post("/apply", response_model=CandidateOut)
 def apply(

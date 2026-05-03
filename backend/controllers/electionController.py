@@ -27,6 +27,9 @@ def create_election(db: Session, election_in: ElectionCreate):
     db.refresh(db_election)
     return db_election
 
+def get_all_elections(db: Session):
+    return db.query(Election).all()
+
 def get_election(db: Session, election_id: int):
     election = db.query(Election).filter(Election.id == election_id).first()
     if not election:
