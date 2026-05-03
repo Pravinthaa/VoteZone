@@ -1,254 +1,281 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../components/Login.css';
+import './dashboard.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
-interface Student {
-  id: number;
-  name: string;
-  roll_no: string;
-  year: number;
-  email: string;
-  is_candidate: boolean;
-}
+interface Student { id: number; name: string; roll_no: string; year: number; email: string; is_candidate: boolean; }
+interface Election { id: number; name: string; start_time: string; end_time: string; status: string; posts: string[]; }
+interface Candidate { id: number; post: string; status: string; resume_path?: string; photo_path?: string; }
 
-interface Election {
-  id: number;
-  name: string;
-  start_time: string;
-  end_time: string;
-  status: string;
-  posts: string[];
-}
-
-interface Candidate {
-  id: number;
-  post: string;
-  status: string;
-  resume_path?: string;
-  photo_path?: string;
-}
+const STATUS_PILL: Record<string, string> = {
+  active: 'db-pill-green',
+  upcoming: 'db-pill-blue',
+  completed: 'db-pill-muted',
+};
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<'students' | 'candidates' | 'elections'>('elections');
   const [students, setStudents] = useState<Student[]>([]);
   const [elections, setElections] = useState<Election[]>([]);
   const [pendingCandidates, setPendingCandidates] = useState<Candidate[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
-  const [activeTab, setActiveTab] = useState<'students' | 'candidates' | 'elections'>('students');
+  const [error, setError] = useState('');
+  const [newElection, setNewElection] = useState({ name: '', start_time: '', end_time: '', posts: '' });
 
-  const [newElection, setNewElection] = useState({
-    name: '',
-    start_time: '',
-    end_time: '',
-    posts: ''
-  });
+  const token = () => localStorage.getItem('token') || '';
 
   const fetchStudents = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) return navigate('/login');
     try {
-      const res = await fetch(`${API_URL}/students/all`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (!res.ok) throw new Error('Failed to fetch students. Root access required.');
-      setStudents(await res.json());
-    } catch (err: any) { setError(err.message); }
+      const res = await fetch(`${API_URL}/students/all`, { headers: { Authorization: `Bearer ${token()}` } });
+      if (!res.ok) throw new Error('Access denied');
+      const data = await res.json();
+      setStudents([...data].sort((a, b) => a.id - b.id));
+    } catch (e: any) { setError(e.message); }
   };
 
   const fetchElections = async () => {
-    const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`${API_URL}/elections/`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const res = await fetch(`${API_URL}/elections/`, { headers: { Authorization: `Bearer ${token()}` } });
       if (res.ok) setElections(await res.json());
-    } catch (err: any) { console.error(err); }
+    } catch { /* silent */ }
   };
 
-  const fetchPendingCandidates = async () => {
-    const token = localStorage.getItem('token');
+  const fetchPending = async () => {
     try {
-      const res = await fetch(`${API_URL}/candidates/pending`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const res = await fetch(`${API_URL}/candidates/pending`, { headers: { Authorization: `Bearer ${token()}` } });
       if (res.ok) setPendingCandidates(await res.json());
-    } catch (err: any) { console.error(err); }
+    } catch { /* silent */ }
   };
 
   useEffect(() => {
-    setLoading(true);
+    if (!localStorage.getItem('token')) return navigate('/login');
     if (activeTab === 'students') fetchStudents();
     else if (activeTab === 'elections') fetchElections();
-    else if (activeTab === 'candidates') fetchPendingCandidates();
-    setLoading(false);
+    else if (activeTab === 'candidates') fetchPending();
   }, [activeTab]);
 
   const handleCreateElection = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
-    const postsArray = newElection.posts.split(',').map(p => p.trim()).filter(p => p);
-    
     try {
       const res = await fetch(`${API_URL}/elections/`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
         body: JSON.stringify({
           name: newElection.name,
           start_time: new Date(newElection.start_time).toISOString(),
           end_time: new Date(newElection.end_time).toISOString(),
-          posts: postsArray
-        })
+          posts: newElection.posts.split(',').map(p => p.trim()).filter(Boolean),
+        }),
       });
       if (res.ok) {
         setNewElection({ name: '', start_time: '', end_time: '', posts: '' });
         fetchElections();
       } else {
-        const data = await res.json();
-        alert(data.detail || 'Failed to create election');
+        const d = await res.json();
+        setError(d.detail || 'Failed to create election');
       }
-    } catch (err) {
-      console.error(err);
-    }
+    } catch { setError('Network error'); }
   };
 
-  const handleApproveCandidate = async (id: number) => {
-    const token = localStorage.getItem('token');
-    try {
-      const res = await fetch(`${API_URL}/candidates/${id}/approve`, {
-        method: 'PUT',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) fetchPendingCandidates();
-    } catch (err) { console.error(err); }
+  const handleApprove = async (id: number) => {
+    await fetch(`${API_URL}/candidates/${id}/approve`, {
+      method: 'PUT', headers: { Authorization: `Bearer ${token()}` },
+    });
+    fetchPending();
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
-  };
+  const tabs = [
+    { key: 'elections', label: 'ELECTIONS' },
+    { key: 'candidates', label: 'APPROVALS' },
+    { key: 'students', label: 'STUDENTS' },
+  ] as const;
 
   return (
-    <div className="csea-layout">
-      <div className="cyber-ring ring-1"></div>
-      <div className="cyber-ring ring-2"></div>
-      <div className="csea-container" style={{ maxWidth: '1000px', width: '90%', minHeight: '600px', padding: '3rem' }}>
-        <div className="panel-header" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h1 className="glitch-title" style={{ textAlign: 'left', marginBottom: '0.5rem' }}>ADMIN PROTOCOL</h1>
-            <div className="status-indicator" style={{ display: 'flex' }}><span className="blink-dot"></span> ROOT ACCESS GRANTED</div>
-          </div>
-          <button onClick={handleLogout} className="cyber-btn" style={{ padding: '0.8rem 1.5rem' }}>TERMINATE SESSION</button>
+    <div className="db-layout">
+      {/* Nav */}
+      <nav className="db-nav">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <button className="db-back-btn" onClick={() => navigate(-1)}>← BACK</button>
+          <span className="db-nav-brand">VOTE<span>ZONE</span></span>
         </div>
+        <div className="db-nav-right">
+          <div className="db-badge"><span className="db-badge-dot" /> ADMIN UPLINK</div>
+          <button className="db-logout" onClick={() => { localStorage.removeItem('token'); navigate('/login'); }}>
+            LOGOUT
+          </button>
+        </div>
+      </nav>
 
-        <div className="panel-body">
-          {error && <div className="error-box" style={{ marginBottom: '2rem' }}><i className="ri-error-warning-line"></i> {error}</div>}
-          
-          <div className="admin-tabs" style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '1rem' }}>
-            <button onClick={() => setActiveTab('students')} className={`cyber-btn ${activeTab === 'students' ? 'active-tab' : ''}`} style={{ flex: 1, opacity: activeTab === 'students' ? 1 : 0.5 }}>STUDENT DATABASE</button>
-            <button onClick={() => setActiveTab('candidates')} className={`cyber-btn ${activeTab === 'candidates' ? 'active-tab' : ''}`} style={{ flex: 1, opacity: activeTab === 'candidates' ? 1 : 0.5 }}>CANDIDATE APPROVALS</button>
-            <button onClick={() => setActiveTab('elections')} className={`cyber-btn ${activeTab === 'elections' ? 'active-tab' : ''}`} style={{ flex: 1, opacity: activeTab === 'elections' ? 1 : 0.5 }}>ELECTION MGMT</button>
-          </div>
+      {/* Tabs */}
+      <div className="db-tabs">
+        {tabs.map(t => (
+          <button key={t.key} className={`db-tab ${activeTab === t.key ? 'active' : ''}`} onClick={() => setActiveTab(t.key)}>
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-          {activeTab === 'students' && (
-            <div className="table-container" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--glass-border)', borderRadius: '8px', overflow: 'auto', maxHeight: '400px' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', color: 'var(--text-main)' }}>
-                <thead style={{ background: 'rgba(3,7,18,0.95)' }}>
-                  <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                    <th style={{ padding: '1rem', color: 'var(--accent-main)' }}>ID</th>
-                    <th style={{ padding: '1rem', color: 'var(--accent-main)' }}>NAME</th>
-                    <th style={{ padding: '1rem', color: 'var(--accent-main)' }}>ROLL NO</th>
-                    <th style={{ padding: '1rem', color: 'var(--accent-main)' }}>ROLE</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {students.map(s => (
-                    <tr key={s.id} style={{ borderBottom: '1px solid rgba(56,189,248,0.05)' }}>
-                      <td style={{ padding: '1rem' }}>{s.id}</td>
-                      <td style={{ padding: '1rem' }}>{s.name}</td>
-                      <td style={{ padding: '1rem' }}>{s.roll_no}</td>
-                      <td style={{ padding: '1rem' }}>{s.is_candidate ? 'CANDIDATE' : 'VOTER'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      {/* Body */}
+      <div className="db-body">
+        {error && <div className="db-error">{error}</div>}
+
+        {/* ── ELECTIONS ── */}
+        {activeTab === 'elections' && (
+          <>
+            <div className="db-card">
+              <div className="db-card-header">INITIALIZE NEW ELECTION</div>
+              <div className="db-card-body">
+                <form className="db-form" onSubmit={handleCreateElection}>
+                  <div className="db-grid-2">
+                    <div className="db-field">
+                      <label className="db-label">ELECTION NAME</label>
+                      <input className="db-input" required placeholder="e.g. Student Council 2025" value={newElection.name}
+                        onChange={e => setNewElection({ ...newElection, name: e.target.value })} />
+                    </div>
+                    <div className="db-field">
+                      <label className="db-label">POSTS <span style={{opacity:0.5, fontWeight:400}}></span></label>
+                      <input className="db-input" placeholder="President, Secretary"
+                        required value={newElection.posts}
+                        onChange={e => setNewElection({ ...newElection, posts: e.target.value })} />
+                    </div>
+                    <div className="db-field">
+                      <label className="db-label">START TIME</label>
+                      <input className="db-input" type="datetime-local" required value={newElection.start_time}
+                        onChange={e => setNewElection({ ...newElection, start_time: e.target.value })} />
+                    </div>
+                    <div className="db-field">
+                      <label className="db-label">END TIME</label>
+                      <input className="db-input" type="datetime-local" required value={newElection.end_time}
+                        onChange={e => setNewElection({ ...newElection, end_time: e.target.value })} />
+                    </div>
+                  </div>
+                  <button type="submit" className="db-btn db-btn-full">CREATE ELECTION</button>
+                </form>
+              </div>
             </div>
-          )}
 
-          {activeTab === 'candidates' && (
-            <div className="table-container" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '1rem' }}>
-              {pendingCandidates.length === 0 ? <p style={{ textAlign: 'center', color: 'var(--text-muted)' }}>NO PENDING CANDIDATES</p> : (
-                <table style={{ width: '100%', textAlign: 'left', color: 'var(--text-main)' }}>
+            <div className="db-card">
+              <div className="db-card-header">
+                ALL ELECTIONS
+                <span style={{ marginLeft: 'auto', fontFamily: 'Electrolize', fontSize: '0.7rem',
+                  color: 'rgba(125,211,252,0.5)', fontWeight: 400, letterSpacing: 1 }}>
+                  {elections.length} record{elections.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+              {elections.length === 0 ? (
+                <div className="db-empty">No elections created yet</div>
+              ) : (
+                <table className="db-table">
                   <thead>
                     <tr>
-                      <th style={{ padding: '1rem' }}>ID</th>
-                      <th style={{ padding: '1rem' }}>POST</th>
-                      <th style={{ padding: '1rem' }}>MANIFESTO</th>
-                      <th style={{ padding: '1rem' }}>ACTION</th>
+                      <th>NAME</th>
+                      <th>STATUS</th>
+                      <th>POSTS</th>
+                      <th>START</th>
+                      <th>END</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {pendingCandidates.map(c => (
-                      <tr key={c.id}>
-                        <td style={{ padding: '1rem' }}>{c.id}</td>
-                        <td style={{ padding: '1rem' }}>{c.post}</td>
-                        <td style={{ padding: '1rem' }}>{c.resume_path ? <a href={`${API_URL}/uploads/${c.resume_path}`} target="_blank" rel="noreferrer" style={{color: 'var(--accent-main)'}}>View PDF</a> : 'N/A'}</td>
-                        <td style={{ padding: '1rem' }}><button onClick={() => handleApproveCandidate(c.id)} className="cyber-btn" style={{ padding: '0.4rem 1rem' }}>APPROVE</button></td>
+                    {elections.map(e => (
+                      <tr key={e.id}>
+                        <td style={{ fontWeight: 600 }}>{e.name}</td>
+                        <td><span className={`db-pill ${STATUS_PILL[e.status] ?? 'db-pill-muted'}`}>{e.status.toUpperCase()}</span></td>
+                        <td style={{ color: '#7dd3fc', fontSize: '0.82rem' }}>{e.posts?.join(' · ')}</td>
+                        <td style={{ color: 'rgba(125,211,252,0.55)', fontSize: '0.8rem' }}>{new Date(e.start_time).toLocaleString()}</td>
+                        <td style={{ color: 'rgba(125,211,252,0.55)', fontSize: '0.8rem' }}>{new Date(e.end_time).toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               )}
             </div>
-          )}
+          </>
+        )}
 
-          {activeTab === 'elections' && (
-            <div>
-              <form onSubmit={handleCreateElection} className="cyber-form" style={{ marginBottom: '2rem', padding: '1.5rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px' }}>
-                <h3 style={{ color: 'var(--accent-main)', marginBottom: '1rem' }}>INITIALIZE NEW ELECTION</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                  <div className="input-group">
-                    <label>ELECTION NAME</label>
-                    <input type="text" required value={newElection.name} onChange={e => setNewElection({...newElection, name: e.target.value})} />
-                  </div>
-                  <div className="input-group">
-                    <label>POSTS (Comma separated)</label>
-                    <input type="text" placeholder="President, Vice President" required value={newElection.posts} onChange={e => setNewElection({...newElection, posts: e.target.value})} />
-                  </div>
-                  <div className="input-group">
-                    <label>START TIME (Local)</label>
-                    <input type="datetime-local" required value={newElection.start_time} onChange={e => setNewElection({...newElection, start_time: e.target.value})} />
-                  </div>
-                  <div className="input-group">
-                    <label>END TIME (Local)</label>
-                    <input type="datetime-local" required value={newElection.end_time} onChange={e => setNewElection({...newElection, end_time: e.target.value})} />
-                  </div>
-                </div>
-                <button type="submit" className="cyber-btn w-full">CREATE ELECTION</button>
-              </form>
-              
-              <table style={{ width: '100%', textAlign: 'left', color: 'var(--text-main)', border: '1px solid var(--glass-border)', borderRadius: '8px' }}>
-                <thead style={{ background: 'rgba(3,7,18,0.95)' }}>
+        {/* ── CANDIDATE APPROVALS ── */}
+        {activeTab === 'candidates' && (
+          <div className="db-card">
+            <div className="db-card-header">
+              PENDING APPROVALS
+              {pendingCandidates.length > 0 && (
+                <span style={{ marginLeft: 'auto', background: 'rgba(251,113,133,0.15)', color: '#fb7185',
+                  border: '1px solid rgba(251,113,133,0.3)', borderRadius: 20, padding: '0.1rem 0.6rem',
+                  fontFamily: 'Rajdhani', fontSize: '0.7rem', fontWeight: 700 }}>
+                  {pendingCandidates.length} PENDING
+                </span>
+              )}
+            </div>
+            {pendingCandidates.length === 0 ? (
+              <div className="db-empty">No pending applications — all clear</div>
+            ) : (
+              <table className="db-table">
+                <thead>
                   <tr>
-                    <th style={{ padding: '1rem', color: 'var(--accent-main)' }}>NAME</th>
-                    <th style={{ padding: '1rem', color: 'var(--accent-main)' }}>STATUS</th>
-                    <th style={{ padding: '1rem', color: 'var(--accent-main)' }}>POSTS</th>
+                    <th>CANDIDATE ID</th>
+                    <th>POST APPLIED</th>
+                    <th>MANIFESTO</th>
+                    <th>ACTION</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {elections.map(e => (
-                    <tr key={e.id} style={{ borderBottom: '1px solid rgba(56,189,248,0.05)' }}>
-                      <td style={{ padding: '1rem' }}>{e.name}</td>
-                      <td style={{ padding: '1rem' }}><span style={{ color: e.status === 'active' ? '#34d399' : 'var(--text-muted)' }}>{e.status.toUpperCase()}</span></td>
-                      <td style={{ padding: '1rem' }}>{e.posts.join(', ')}</td>
+                  {pendingCandidates.map(c => (
+                    <tr key={c.id}>
+                      <td style={{ color: 'rgba(125,211,252,0.6)', fontFamily: 'Rajdhani', fontWeight: 600 }}>#{c.id}</td>
+                      <td><span className="db-pill db-pill-blue">{c.post}</span></td>
+                      <td>
+                        {c.resume_path
+                          ? <a href={`${API_URL}/uploads/${c.resume_path}`} target="_blank" rel="noreferrer"
+                              style={{ color: '#38bdf8', fontSize: '0.82rem', textDecoration: 'none', borderBottom: '1px solid rgba(56,189,248,0.3)' }}>View PDF ↗</a>
+                          : <span style={{ color: 'rgba(125,211,252,0.35)', fontSize: '0.82rem' }}>Not uploaded</span>}
+                      </td>
+                      <td>
+                        <button className="db-btn db-btn-sm" onClick={() => handleApprove(c.id)}>APPROVE</button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-          )}
+            )}
+          </div>
+        )}
 
-        </div>
+        {/* ── STUDENTS ── */}
+        {activeTab === 'students' && (
+          <div className="db-card">
+            <div className="db-card-header">
+              STUDENT REGISTRY
+              <span style={{ marginLeft: 'auto', fontFamily: 'Electrolize', fontSize: '0.7rem',
+                color: 'rgba(125,211,252,0.5)', fontWeight: 400, letterSpacing: 1 }}>
+                {students.length} registered
+              </span>
+            </div>
+            {students.length === 0 ? (
+              <div className="db-empty">No students registered yet</div>
+            ) : (
+              <table className="db-table">
+                <thead>
+                  <tr><th>ID</th><th>NAME</th><th>ROLL NO</th><th>YEAR</th><th>ROLE</th></tr>
+                </thead>
+                <tbody>
+                  {students.map(s => (
+                    <tr key={s.id}>
+                      <td style={{ color: 'rgba(125,211,252,0.55)', fontFamily: 'Rajdhani', fontWeight: 600 }}>#{s.id}</td>
+                      <td style={{ fontWeight: 600, color: '#e0f2fe' }}>{s.name}</td>
+                      <td style={{ fontFamily: 'Rajdhani', fontWeight: 700, fontSize: '0.82rem', color: '#7dd3fc', letterSpacing: '1px' }}>{s.roll_no.toUpperCase()}</td>
+                      <td style={{ color: 'rgba(125,211,252,0.6)' }}>Year {s.year}</td>
+                      <td>
+                        <span className={`db-pill ${s.is_candidate ? 'db-pill-red' : 'db-pill-green'}`}>
+                          {s.is_candidate ? 'CANDIDATE' : 'VOTER'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

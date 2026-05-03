@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../components/Login.css';
+import './dashboard.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
@@ -13,28 +13,25 @@ const CandidateDashboard: React.FC = () => {
   const [resume, setResume] = useState<File | null>(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const token = () => localStorage.getItem('token') || '';
 
   useEffect(() => {
-    const fetchElections = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) return navigate('/login');
-      try {
-        const res = await fetch(`${API_URL}/elections/`, { headers: { 'Authorization': `Bearer ${token}` } });
-        if (res.ok) setElections(await res.json());
-      } catch (err: any) { console.error(err); }
-    };
-    fetchElections();
+    if (!token()) return navigate('/login');
+    fetch(`${API_URL}/elections/`, { headers: { Authorization: `Bearer ${token()}` } })
+      .then(r => r.ok ? r.json() : [])
+      .then(setElections)
+      .catch(() => {});
   }, [navigate]);
+
+  const selectedElectionData = elections.find(e => e.id.toString() === selectedElection);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setMessage('');
-    const token = localStorage.getItem('token');
-    
-    if (!selectedElection || !selectedPost || !photo || !resume) {
-      return setError('ALL FIELDS ARE REQUIRED FOR UPLINK');
-    }
+    setError(''); setMessage('');
+    if (!selectedElection || !selectedPost || !photo || !resume)
+      return setError('All fields are required');
 
     const formData = new FormData();
     formData.append('election_id', selectedElection);
@@ -42,80 +39,85 @@ const CandidateDashboard: React.FC = () => {
     formData.append('photo', photo);
     formData.append('resume', resume);
 
+    setLoading(true);
     try {
       const res = await fetch(`${API_URL}/candidates/apply`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData
+        headers: { Authorization: `Bearer ${token()}` },
+        body: formData,
       });
       if (res.ok) {
-        setMessage('APPLICATION UPLINK SUCCESSFUL. AWAITING ADMIN APPROVAL.');
-        // Reset form but don't force a reload so user sees success msg
+        setMessage('Application submitted — awaiting admin approval.');
+        setSelectedElection(''); setSelectedPost(''); setPhoto(null); setResume(null);
       } else {
-        const data = await res.json();
-        setError(data.detail || 'TRANSMISSION FAILED');
+        const d = await res.json();
+        setError(d.detail || 'Submission failed');
       }
-    } catch (err) {
-      setError('NETWORK ERROR');
-    }
+    } catch { setError('Network error'); }
+    finally { setLoading(false); }
   };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
-  };
-
-  const selectedElectionData = elections.find(e => e.id.toString() === selectedElection);
 
   return (
-    <div className="csea-layout">
-      <div className="cyber-ring ring-1"></div>
-      <div className="cyber-ring ring-2"></div>
-      <div className="csea-container" style={{ maxWidth: '600px' }}>
-        <div className="panel-header" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h1 className="glitch-title" style={{ textAlign: 'left', marginBottom: '0.5rem' }}>CANDIDATE PROTOCOL</h1>
-            <div className="status-indicator" style={{ display: 'flex' }}><span className="blink-dot"></span> SECURE UPLINK ESTABLISHED</div>
-          </div>
-          <button onClick={handleLogout} className="cyber-btn" style={{ padding: '0.8rem 1.5rem', margin: 0 }}>TERMINATE SESSION</button>
+    <div className="db-layout">
+      <nav className="db-nav">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <button className="db-back-btn" onClick={() => navigate(-1)}>← BACK</button>
+          <span className="db-nav-brand">VOTE<span>ZONE</span></span>
         </div>
-        <div className="panel-body">
-          {error && <div className="error-box" style={{ marginBottom: '1rem' }}>{error}</div>}
-          {message && <div style={{ color: '#34d399', background: 'rgba(52,211,153,0.1)', padding: '1rem', border: '1px solid #34d399', borderRadius: '4px', marginBottom: '1rem' }}>{message}</div>}
-          
-          <form onSubmit={handleSubmit} className="cyber-form">
-            <div className="input-group">
-              <label>TARGET ELECTION</label>
-              <select required value={selectedElection} onChange={e => { setSelectedElection(e.target.value); setSelectedPost(''); }}>
-                <option value="">-- SELECT ELECTION --</option>
-                {elections.map(e => (
-                  <option key={e.id} value={e.id}>{e.name} ({e.status})</option>
-                ))}
-              </select>
-            </div>
+        <div className="db-nav-right">
+          <div className="db-badge"><span className="db-badge-dot" /> CANDIDATE PORTAL</div>
+          <button className="db-logout" onClick={() => { localStorage.removeItem('token'); navigate('/login'); }}>LOGOUT</button>
+        </div>
+      </nav>
 
-            <div className="input-group">
-              <label>TARGET POST</label>
-              <select required value={selectedPost} onChange={e => setSelectedPost(e.target.value)} disabled={!selectedElection}>
-                <option value="">-- SELECT POST --</option>
-                {selectedElectionData?.posts?.map((p: string) => (
-                  <option key={p} value={p}>{p}</option>
-                ))}
-              </select>
-            </div>
+      <div className="db-body" style={{ maxWidth: 560, alignSelf: 'center', width: '100%' }}>
+        <div className="db-card">
+          <div className="db-card-header">CANDIDATE APPLICATION</div>
+          <div className="db-card-body">
+            {message && <div className="db-success" style={{ marginBottom: '1rem' }}>{message}</div>}
+            {error && <div className="db-error" style={{ marginBottom: '1rem' }}>{error}</div>}
 
-            <div className="input-group">
-              <label>PROFILE PHOTO UPLOAD (IMAGE)</label>
-              <input type="file" accept="image/*" required onChange={e => setPhoto(e.target.files?.[0] || null)} style={{ padding: '1rem', background: 'rgba(0,0,0,0.3)', border: '1px dashed var(--glass-border)', color: 'var(--text-main)', width: '100%' }} />
-            </div>
+            <form className="db-form" onSubmit={handleSubmit}>
+              <div className="db-field">
+                <label className="db-label">TARGET ELECTION</label>
+                <select className="db-select" required value={selectedElection}
+                  onChange={e => { setSelectedElection(e.target.value); setSelectedPost(''); }}>
+                  <option value="">— select election —</option>
+                  {elections.map(e => (
+                    <option key={e.id} value={e.id}>{e.name} · {e.status}</option>
+                  ))}
+                </select>
+              </div>
 
-            <div className="input-group">
-              <label>MANIFESTO UPLOAD (PDF)</label>
-              <input type="file" accept="application/pdf" required onChange={e => setResume(e.target.files?.[0] || null)} style={{ padding: '1rem', background: 'rgba(0,0,0,0.3)', border: '1px dashed var(--glass-border)', color: 'var(--text-main)', width: '100%' }} />
-            </div>
+              <div className="db-field">
+                <label className="db-label">TARGET POST</label>
+                <select className="db-select" required value={selectedPost}
+                  onChange={e => setSelectedPost(e.target.value)}
+                  disabled={!selectedElection}>
+                  <option value="">— select post —</option>
+                  {selectedElectionData?.posts?.map((p: string) => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+              </div>
 
-            <button type="submit" className="cyber-btn w-full">INITIATE UPLINK</button>
-          </form>
+              <div className="db-field">
+                <label className="db-label">PROFILE PHOTO</label>
+                <input type="file" accept="image/*" required className="db-file-input"
+                  onChange={e => setPhoto(e.target.files?.[0] || null)} />
+              </div>
+
+              <div className="db-field">
+                <label className="db-label">MANIFESTO (PDF)</label>
+                <input type="file" accept="application/pdf" required className="db-file-input"
+                  onChange={e => setResume(e.target.files?.[0] || null)} />
+              </div>
+
+              <button type="submit" className="db-btn db-btn-full" disabled={loading}>
+                {loading ? 'SUBMITTING...' : 'SUBMIT APPLICATION'}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>

@@ -1,0 +1,184 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&display=swap');
+
+/* ─── Shell ───────────────────────────────────────────── */
+.vz-loading {
+  position: fixed;
+  inset: 0;
+  background: #030712;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  overflow: hidden;
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.vz-fade-out {
+  opacity: 0;
+  transform: scale(1.06);
+  pointer-events: none;
+}
+
+/* ─── Particle canvas ─── */
+.vz-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+/* ─── Radial glow ─── */
+.vz-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 55% 45% at 50% 50%,
+    rgba(56, 189, 248, 0.08) 0%,
+    transparent 70%
+  );
+  z-index: 1;
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1.2; }
+}
+
+/* ─── Sweep bar ─── */
+.vz-bar-wrap {
+  width: clamp(200px, 42vw, 360px);
+  height: 2px;
+  background: rgba(56, 189, 248, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  opacity: 0;
+  animation: fadeIn 0.3s 0.7s forwards;
+}
+
+.vz-bar {
+  height: 100%;
+  width: 45%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, #38bdf8, #7dd3fc, transparent);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.9);
+  animation: sweep 1.4s 0.8s ease-in-out infinite;
+}
+
+@keyframes sweep {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(320%); }
+}
+
+/* ─── Content ─── */
+.vz-content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* ─── Glitch title ─── */
+.vz-title {
+  display: flex;
+  gap: 0.1em;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(3.8rem, 13vw, 7.5rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  user-select: none;
+  position: relative;
+}
+
+/* Glitch pseudo overlay */
+.vz-title::before,
+.vz-title::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  overflow: hidden;
+  clip-path: inset(0 0 100% 0);
+}
+
+.vz-title::before {
+  color: #fb7185;
+  animation: glitchTop 3.5s 1.2s infinite;
+}
+
+.vz-title::after {
+  color: #38bdf8;
+  animation: glitchBot 3.5s 1.2s infinite;
+}
+
+@keyframes glitchTop {
+  0%, 88%, 100% { clip-path: inset(0 0 100% 0); transform: none; }
+  90%           { clip-path: inset(0 0 60% 0); transform: translateX(-3px); opacity: 0.8; }
+  92%           { clip-path: inset(20% 0 40% 0); transform: translateX(3px); }
+  94%           { clip-path: inset(0 0 100% 0); transform: none; }
+}
+
+@keyframes glitchBot {
+  0%, 88%, 100% { clip-path: inset(100% 0 0 0); transform: none; }
+  91%           { clip-path: inset(60% 0 0 0); transform: translateX(4px); opacity: 0.7; }
+  93%           { clip-path: inset(40% 0 20% 0); transform: translateX(-3px); }
+  95%           { clip-path: inset(100% 0 0 0); transform: none; }
+}
+
+.vz-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(32px);
+}
+
+.vz-vote {
+  color: #f0f9ff;
+  animation: wordIn 0.65s 0.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.vz-zone {
+  color: #38bdf8;
+  text-shadow:
+    0 0 28px rgba(56, 189, 248, 0.75),
+    0 0 60px rgba(56, 189, 248, 0.25);
+  animation: wordIn 0.65s 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes wordIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+/* ─── Animated corner brackets ─── */
+.vz-corner {
+  position: fixed;
+  width: 26px;
+  height: 26px;
+  z-index: 4;
+  opacity: 0;
+  animation: cornerIn 0.5s 0.5s forwards;
+}
+
+@keyframes cornerIn {
+  from { opacity: 0; transform: scale(0.4); }
+  to   { opacity: 0.55; transform: scale(1); }
+}
+
+.vz-tl { top: 20px; left: 20px;
+  border-top: 1.5px solid #38bdf8; border-left: 1.5px solid #38bdf8; }
+.vz-tr { top: 20px; right: 20px;
+  border-top: 1.5px solid #38bdf8; border-right: 1.5px solid #38bdf8; }
+.vz-bl { bottom: 20px; left: 20px;
+  border-bottom: 1.5px solid #38bdf8; border-left: 1.5px solid #38bdf8; }
+.vz-br { bottom: 20px; right: 20px;
+  border-bottom: 1.5px solid #38bdf8; border-right: 1.5px solid #38bdf8; }

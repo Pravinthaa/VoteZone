@@ -59,8 +59,8 @@
 /* Card Container perfectly centered */
 .csea-container {
   z-index: 10;
-  width: 480px;
-  height: 480px;
+  width: clamp(340px, 90vw, 480px);
+  min-height: 460px;
   background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -81,12 +81,12 @@
 }
 
 .glitch-title {
-  font-size: 1.8rem;
-  color: #e0f2fe; /* Light silver/blue, less neon */
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(1.6rem, 4vw, 2rem);
+  color: #e0f2fe;
   margin-bottom: 0.5rem;
-  font-weight: 700; /* Bold institutional look */
-  letter-spacing: 3px;
-  margin-right: -3px; /* Offset letter-spacing to center properly */
+  font-weight: 700;
+  letter-spacing: 4px;
 }
 
 .status-indicator {

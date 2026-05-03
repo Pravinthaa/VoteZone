@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import LoadingScreen from './components/LoadingScreen';
 import Login from './components/Login';
 import Register from './components/Register';
 import VoterDashboard from './pages/VoterDashboard';
@@ -6,6 +8,12 @@ import CandidateDashboard from './pages/CandidateDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
+  const [loading, setLoading] = useState(true);
+
+  if (loading) {
+    return <LoadingScreen onComplete={() => setLoading(false)} />;
+  }
+
   return (
     <BrowserRouter>
       <Routes>

@@ -176,16 +176,35 @@ const Login: React.FC = () => {
               {role === 'admin' ? (
                 <p>Initializing secure uplink...</p>
               ) : (
-                <div style={{ marginTop: '2rem' }}>
-                  <p style={{ marginBottom: '1rem', color: 'var(--text-muted)' }}>SELECT PROTOCOL:</p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ marginTop: '2.5rem' }}>
+                  <div style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: '0.6rem',
+                    letterSpacing: '3px',
+                    color: 'rgba(125,211,252,0.45)',
+                    marginBottom: '1rem'
+                  }}>SELECT YOUR ROLE TO CONTINUE</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                     <button onClick={() => navigate('/voter')} className="cyber-btn">
-                      INITIATE VOTER PROTOCOL
+                      <i className="ri-check-double-line" style={{ marginRight: '0.5rem' }}></i>
+                      VOTER PORTAL
                     </button>
-                    <button onClick={() => navigate('/candidate')} className="cyber-btn" style={{ borderColor: 'var(--text-muted)', color: 'var(--text-muted)' }}>
-                      INITIATE CANDIDATE PROTOCOL
+                    <button onClick={() => navigate('/candidate')} className="cyber-btn"
+                      style={{ borderColor: 'rgba(125,211,252,0.25)', color: 'rgba(125,211,252,0.6)' }}>
+                      <i className="ri-user-star-line" style={{ marginRight: '0.5rem' }}></i>
+                      CANDIDATE PORTAL
                     </button>
                   </div>
+                  <div style={{
+                    marginTop: '2rem',
+                    paddingTop: '1.2rem',
+                    borderTop: '1px solid rgba(56,189,248,0.08)',
+                    fontFamily: 'var(--font-display)',
+                    fontSize: '1.1rem',
+                    fontWeight: 700,
+                    letterSpacing: '5px',
+                    color: 'rgba(56,189,248,0.35)'
+                  }}>VOTEZONE</div>
                 </div>
               )}
             </div>

@@ -1,0 +1,522 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Electrolize&display=swap');
+
+/* ═══════════════════════════════════════════════════
+   dashboard.css  –  shared styles for all dashboards
+   ═══════════════════════════════════════════════════ */
+
+/* ── Layout ─────────────────────────────────────── */
+.db-layout {
+  position: fixed;
+  inset: 0;
+  background-color: #030712;
+  background-image:
+    linear-gradient(rgba(56,189,248,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56,189,248,0.035) 1px, transparent 1px);
+  background-size: 52px 52px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: 'Electrolize', sans-serif;
+}
+
+/* ── Top nav bar ─────────────────────────────────── */
+.db-nav {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2.5rem;
+  height: 68px;
+  border-bottom: 1px solid rgba(56,189,248,0.12);
+  background: rgba(3,7,18,0.92);
+  backdrop-filter: blur(12px);
+  z-index: 20;
+}
+
+.db-nav-brand {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: 5px;
+  color: #f0f9ff;
+}
+
+.db-nav-brand span { color: #38bdf8; }
+
+.db-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.db-badge {
+  font-family: 'Electrolize', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  color: #7dd3fc;
+  background: rgba(56,189,248,0.06);
+  border: 1px solid rgba(56,189,248,0.15);
+  border-radius: 20px;
+  padding: 0.3rem 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.db-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #38bdf8;
+  animation: blink 2.5s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.15; }
+}
+
+.db-logout {
+  background: transparent;
+  color: #7dd3fc;
+  border: 1px solid rgba(56,189,248,0.2);
+  border-radius: 6px;
+  padding: 0.45rem 1.1rem;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.db-logout:hover {
+  color: #fb7185;
+  border-color: rgba(251,113,133,0.45);
+  background: rgba(251,113,133,0.06);
+}
+
+.db-back-btn {
+  background: transparent;
+  color: rgba(125,211,252,0.55);
+  border: 1px solid rgba(56,189,248,0.15);
+  border-radius: 6px;
+  padding: 0.35rem 0.85rem;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
+}
+
+.db-back-btn:hover {
+  color: #38bdf8;
+  border-color: rgba(56,189,248,0.4);
+  background: rgba(56,189,248,0.05);
+}
+
+/* ── Tab bar ─────────────────────────────────────── */
+.db-tabs {
+  flex-shrink: 0;
+  display: flex;
+  padding: 0 2.5rem;
+  border-bottom: 1px solid rgba(56,189,248,0.1);
+  background: rgba(3,7,18,0.75);
+}
+
+.db-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #4d7a96;
+  padding: clamp(0.7rem, 1.5vw, 1rem) clamp(1rem, 2vw, 1.6rem);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(0.72rem, 1.2vw, 0.85rem);
+  font-weight: 600;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.db-tab:hover { color: #7dd3fc; }
+
+.db-tab.active {
+  color: #38bdf8;
+  border-bottom-color: #38bdf8;
+}
+
+/* ── Scrollable body ─────────────────────────────── */
+.db-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Section card ────────────────────────────────── */
+.db-card {
+  background: rgba(5,15,30,0.7);
+  border: 1px solid rgba(56,189,248,0.12);
+  border-radius: 10px;
+  overflow: hidden;
+  backdrop-filter: blur(4px);
+}
+
+.db-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: clamp(0.75rem, 1.5vw, 1rem) clamp(1rem, 2vw, 1.5rem);
+  border-bottom: 1px solid rgba(56,189,248,0.1);
+  background: rgba(56,189,248,0.03);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(0.72rem, 1.1vw, 0.82rem);
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: #38bdf8;
+}
+
+.db-card-body {
+  padding: 1.5rem;
+}
+
+/* ── Table ───────────────────────────────────────── */
+.db-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  color: #e0f2fe;
+}
+
+.db-table th {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(0.62rem, 1vw, 0.72rem);
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  color: #38bdf8;
+  padding: clamp(0.65rem, 1.2vw, 0.9rem) clamp(0.8rem, 1.5vw, 1.4rem);
+  text-align: left;
+  border-bottom: 1px solid rgba(56,189,248,0.12);
+  background: rgba(3,7,18,0.7);
+}
+
+.db-table td {
+  padding: clamp(0.65rem, 1.2vw, 0.95rem) clamp(0.8rem, 1.5vw, 1.4rem);
+  border-bottom: 1px solid rgba(56,189,248,0.05);
+  font-family: 'Electrolize', sans-serif;
+  font-size: clamp(0.78rem, 1.1vw, 0.88rem);
+  color: #e0f2fe;
+  vertical-align: middle;
+}
+
+.db-table tr:last-child td { border-bottom: none; }
+.db-table tr:hover td    { background: rgba(56,189,248,0.03); }
+
+/* ── Form grid ───────────────────────────────────── */
+.db-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.db-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+}
+
+@media (max-width: 640px) {
+  .db-grid-2 { grid-template-columns: 1fr; }
+}
+
+.db-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.db-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(0.65rem, 1vw, 0.72rem);
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #7dd3fc;
+}
+
+.db-input,
+.db-select {
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(56,189,248,0.18);
+  border-radius: 7px;
+  padding: clamp(0.6rem, 1.2vw, 0.8rem) 1rem;
+  color: #e0f2fe;
+  font-family: 'Electrolize', sans-serif;
+  font-size: clamp(0.82rem, 1.1vw, 0.9rem);
+  outline: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  width: 100%;
+}
+
+.db-input:focus,
+.db-select:focus {
+  border-color: rgba(56,189,248,0.45);
+  background: rgba(56,189,248,0.045);
+}
+
+.db-input::placeholder {
+  color: rgba(125,211,252,0.25);
+  font-size: 0.85rem;
+}
+
+.db-select option {
+  background: #0a1628;
+  color: #e0f2fe;
+}
+
+/* datetime-local tweak */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.6) sepia(1) saturate(3) hue-rotate(170deg);
+  cursor: pointer;
+}
+
+/* ── Buttons ─────────────────────────────────────── */
+.db-btn {
+  background: transparent;
+  color: #38bdf8;
+  border: 1px solid rgba(56,189,248,0.35);
+  border-radius: 7px;
+  padding: clamp(0.6rem, 1.2vw, 0.8rem) clamp(1rem, 2vw, 1.6rem);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(0.72rem, 1.1vw, 0.82rem);
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.db-btn:hover:not(:disabled) {
+  background: rgba(56,189,248,0.1);
+  border-color: rgba(56,189,248,0.65);
+  box-shadow: 0 0 16px rgba(56,189,248,0.12);
+}
+
+.db-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.db-btn-full { width: 100%; padding: 0.95rem; font-size: 0.88rem; letter-spacing: 3px; }
+
+.db-btn-sm {
+  padding: 0.35rem 0.85rem;
+  font-size: 0.7rem;
+  letter-spacing: 1.5px;
+}
+
+.db-btn-danger {
+  color: #fb7185;
+  border-color: rgba(251,113,133,0.3);
+}
+.db-btn-danger:hover {
+  background: rgba(251,113,133,0.08);
+  border-color: rgba(251,113,133,0.6);
+}
+
+/* ── Pills ───────────────────────────────────────── */
+.db-pill {
+  display: inline-block;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 0.22rem 0.7rem;
+  border-radius: 20px;
+}
+
+.db-pill-green  { color: #34d399; background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.25); }
+.db-pill-blue   { color: #38bdf8; background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.25); }
+.db-pill-red    { color: #fb7185; background: rgba(251,113,133,0.1); border: 1px solid rgba(251,113,133,0.25); }
+.db-pill-muted  { color: #7dd3fc; background: rgba(125,211,252,0.05); border: 1px solid rgba(56,189,248,0.12); }
+
+/* ── Candidate card grid ─────────────────────────── */
+.db-candidate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 1.2rem;
+}
+
+.db-candidate-card {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(56,189,248,0.12);
+  border-radius: 9px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.db-candidate-card:hover {
+  border-color: rgba(56,189,248,0.35);
+  box-shadow: 0 0 20px rgba(56,189,248,0.06);
+}
+
+.db-candidate-photo {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  display: block;
+  border-bottom: 1px solid rgba(56,189,248,0.12);
+}
+
+.db-candidate-photo-placeholder {
+  width: 100%;
+  height: 150px;
+  background: rgba(56,189,248,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(56,189,248,0.18);
+  font-size: 3rem;
+  border-bottom: 1px solid rgba(56,189,248,0.12);
+}
+
+.db-candidate-info {
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.db-candidate-post {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #38bdf8;
+}
+
+.db-candidate-id {
+  font-family: 'Electrolize', sans-serif;
+  font-size: 0.8rem;
+  color: #7dd3fc;
+}
+
+/* ── Empty / alerts ──────────────────────────────── */
+.db-empty {
+  padding: 3.5rem;
+  text-align: center;
+  color: rgba(125,211,252,0.4);
+  font-family: 'Electrolize', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+.db-error {
+  background: rgba(251,113,133,0.06);
+  border: 1px solid rgba(251,113,133,0.2);
+  border-radius: 7px;
+  color: #fb7185;
+  padding: 0.85rem 1.1rem;
+  font-size: 0.85rem;
+  font-family: 'Electrolize', sans-serif;
+}
+
+.db-success {
+  background: rgba(52,211,153,0.06);
+  border: 1px solid rgba(52,211,153,0.2);
+  border-radius: 7px;
+  color: #34d399;
+  padding: 0.85rem 1.1rem;
+  font-size: 0.85rem;
+  font-family: 'Electrolize', sans-serif;
+}
+
+/* ── Live counter ─────────────────────────────────── */
+.db-live-counter {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.85rem 1.2rem;
+  border: 1px solid rgba(52,211,153,0.25);
+  border-radius: 7px;
+  background: rgba(52,211,153,0.05);
+  color: #34d399;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+}
+
+/* ── File input ───────────────────────────────────── */
+.db-file-input {
+  background: rgba(0,0,0,0.3);
+  border: 1px dashed rgba(56,189,248,0.2);
+  border-radius: 7px;
+  padding: 0.8rem 1rem;
+  color: #7dd3fc;
+  font-family: 'Electrolize', sans-serif;
+  font-size: 0.85rem;
+  width: 100%;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.db-file-input:hover {
+  border-color: rgba(56,189,248,0.4);
+}
+
+/* ── Vote post block ──────────────────────────────── */
+.db-vote-block {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.1rem 1.5rem;
+  border: 1px solid rgba(56,189,248,0.12);
+  border-radius: 9px;
+  background: rgba(5,15,30,0.6);
+  transition: border-color 0.2s ease;
+}
+
+.db-vote-block:hover {
+  border-color: rgba(56,189,248,0.25);
+}
+
+.db-vote-post-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  color: #38bdf8;
+  min-width: 150px;
+}
+
+/* ── Results ──────────────────────────────────────── */
+.db-result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem 0;
+  border-bottom: 1px dashed rgba(56,189,248,0.08);
+  font-family: 'Electrolize', sans-serif;
+  font-size: 0.88rem;
+  color: #e0f2fe;
+}
+
+.db-result-row:last-child { border-bottom: none; }
+
+.db-result-votes {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #34d399;
+}
