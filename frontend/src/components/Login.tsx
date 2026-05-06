@@ -99,7 +99,7 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [initialCheckDone, setInitialCheckDone] = useState(false);
+
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -109,7 +109,7 @@ const Login: React.FC = () => {
       setRole(storedRole as 'student' | 'admin');
       if (storedRole === 'admin') navigate('/admin');
     }
-    setInitialCheckDone(true);
+
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
