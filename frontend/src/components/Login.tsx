@@ -100,7 +100,6 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-
   useEffect(() => {
     const token = localStorage.getItem('token');
     const storedRole = localStorage.getItem('user_role');
@@ -109,7 +108,6 @@ const Login: React.FC = () => {
       setRole(storedRole as 'student' | 'admin');
       if (storedRole === 'admin') navigate('/admin');
     }
-
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
