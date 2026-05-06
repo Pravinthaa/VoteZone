@@ -2,7 +2,7 @@ from celery_worker import celery_app
 from sqlalchemy.orm import Session
 from db.session import SessionLocal
 from db.models.election import Election, ElectionStatus
-from datetime import datetime
+from datetime import datetime, timezone
 
 @celery_app.task
 def check_election_status(election_id: int):
@@ -11,10 +11,16 @@ def check_election_status(election_id: int):
     if not election:
         return "Election not found"
 
-    now = datetime.utcnow()
-    if election.start_time <= now < election.end_time:
+    now = datetime.now(timezone.utc)
+    
+    if election.status == ElectionStatus.stopped:
+        return f"Election {election_id} is stopped, skipping status update"
+
+    if now < election.start_time:
+        election.status = ElectionStatus.upcoming
+    elif election.start_time <= now < election.end_time:
         election.status = ElectionStatus.active
-    elif now >= election.end_time and election.status != ElectionStatus.stopped:
+    else:
         election.status = ElectionStatus.completed
 
     db.commit()
@@ -25,16 +31,19 @@ def check_election_status(election_id: int):
 def update_all_election_statuses():
     db: Session = SessionLocal()
     elections = db.query(Election).filter(
-        Election.status.in_([ElectionStatus.upcoming, ElectionStatus.active])
+        Election.status.in_([ElectionStatus.upcoming, ElectionStatus.active, ElectionStatus.completed])
     ).all()
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     updated_count = 0
     for election in elections:
         old_status = election.status
-        if election.start_time <= now < election.end_time:
+        
+        if now < election.start_time:
+            election.status = ElectionStatus.upcoming
+        elif election.start_time <= now < election.end_time:
             election.status = ElectionStatus.active
-        elif now >= election.end_time:
+        else:
             election.status = ElectionStatus.completed
         
         if old_status != election.status:

@@ -15,14 +15,14 @@ class Election(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    start_time = Column(DateTime, nullable=False)
-    end_time = Column(DateTime, nullable=False)
+    start_time = Column(DateTime(timezone=True), nullable=False)
+    end_time = Column(DateTime(timezone=True), nullable=False)
     status = Column(SqlEnum(ElectionStatus), default=ElectionStatus.upcoming)
     posts = Column(ARRAY(Text), default=list)
 
 
     results_status = Column(String, default="pending")   # pending, declared
-    publish_date = Column(DateTime, nullable=True)
+    publish_date = Column(DateTime(timezone=True), nullable=True)
 
     candidates = relationship("Candidate", back_populates="election")
     votes = relationship("Vote", back_populates="election")
