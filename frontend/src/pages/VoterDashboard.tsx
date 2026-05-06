@@ -21,7 +21,13 @@ const VoterDashboard: React.FC = () => {
   const token = () => localStorage.getItem('token') || '';
 
   useEffect(() => {
-    if (!token()) return navigate('/login');
+    const role = localStorage.getItem('user_role');
+    if (!token() || role !== 'student') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user_role');
+      navigate('/login');
+      return;
+    }
     fetch(`${API_URL}/elections/`, { headers: { Authorization: `Bearer ${token()}` } })
       .then(r => r.ok ? r.json() : [])
       .then(setElections)
@@ -100,7 +106,7 @@ const VoterDashboard: React.FC = () => {
             <span className={`db-badge-dot`} style={{ background: isActive ? '#34d399' : 'var(--accent-main)' }} />
             {isActive ? 'LIVE' : sel?.status?.toUpperCase() ?? 'VOTER'}
           </div>
-          <button className="db-logout" onClick={() => { localStorage.removeItem('token'); navigate('/login'); }}>LOGOUT</button>
+          <button className="db-logout" onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('user_role'); navigate('/login'); }}>LOGOUT</button>
         </div>
       </nav>
 

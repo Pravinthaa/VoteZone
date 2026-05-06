@@ -99,6 +99,18 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [initialCheckDone, setInitialCheckDone] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const storedRole = localStorage.getItem('user_role');
+    if (token && storedRole) {
+      setSuccess(true);
+      setRole(storedRole as 'student' | 'admin');
+      if (storedRole === 'admin') navigate('/admin');
+    }
+    setInitialCheckDone(true);
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,6 +133,7 @@ const Login: React.FC = () => {
       const data = await response.json();
       if (data.access_token) {
         localStorage.setItem('token', data.access_token);
+        localStorage.setItem('user_role', role);
       }
       setSuccess(true);
       if (role === 'admin') {
@@ -133,9 +146,52 @@ const Login: React.FC = () => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user_role');
+    setSuccess(false);
+    setError(null);
+    setIdentifier('');
+    setPassword('');
+  };
+
   return (
     <div className="csea-layout">
       <CanvasBackground />
+      
+      {success && (
+        <button 
+          onClick={handleLogout} 
+          style={{ 
+            position: 'fixed', 
+            top: '2rem', 
+            right: '2rem', 
+            background: 'rgba(239, 68, 68, 0.15)', 
+            color: '#ef4444', 
+            border: '1px solid rgba(239, 68, 68, 0.4)',
+            borderRadius: '6px',
+            padding: '0.6rem 1.2rem',
+            fontSize: '0.75rem',
+            fontFamily: 'var(--font-display)',
+            cursor: 'pointer',
+            letterSpacing: '2px',
+            zIndex: 100,
+            backdropFilter: 'blur(8px)',
+            transition: 'all 0.3s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.25)';
+            e.currentTarget.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
+        >
+          <i className="ri-logout-box-r-line" style={{ marginRight: '0.5rem' }}></i>
+          LOGOUT
+        </button>
+      )}
       
       {/* Background Decorative Rings */}
       <div className="cyber-ring ring-1"></div>
@@ -151,30 +207,33 @@ const Login: React.FC = () => {
         </div>
 
         <div className="panel-body">
-          
-          <div className="role-selector">
-            <button 
-              className={`role-btn ${role === 'student' ? 'active' : ''}`}
-              onClick={() => { setRole('student'); setError(null); setIdentifier(''); }}
-              type="button"
-            >
-              <i className="ri-user-4-line"></i> STUDENT
-            </button>
-            <button 
-              className={`role-btn ${role === 'admin' ? 'active' : ''}`}
-              onClick={() => { setRole('admin'); setError(null); setIdentifier(''); }}
-              type="button"
-            >
-              <i className="ri-admin-line"></i> ADMIN
-            </button>
-          </div>
+          {!success && (
+            <div className="role-selector">
+              <button 
+                className={`role-btn ${role === 'student' ? 'active' : ''}`}
+                onClick={() => { setRole('student'); setError(null); setIdentifier(''); }}
+                type="button"
+              >
+                <i className="ri-user-4-line"></i> STUDENT
+              </button>
+              <button 
+                className={`role-btn ${role === 'admin' ? 'active' : ''}`}
+                onClick={() => { setRole('admin'); setError(null); setIdentifier(''); }}
+                type="button"
+              >
+                <i className="ri-admin-line"></i> ADMIN
+              </button>
+            </div>
+          )}
 
           {success ? (
             <div className="success-state">
               <i className="ri-shield-check-line auth-icon"></i>
               <h2 className="neon-text">ACCESS GRANTED</h2>
               {role === 'admin' ? (
-                <p>Initializing secure uplink...</p>
+                <p style={{ marginTop: '1.5rem', letterSpacing: '2px', color: 'var(--accent-main)' }}>
+                  INITIALIZING SECURE UPLINK...
+                </p>
               ) : (
                 <div style={{ marginTop: '3.5rem' }}>
                   <div style={{

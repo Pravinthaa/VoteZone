@@ -18,7 +18,13 @@ const CandidateDashboard: React.FC = () => {
   const token = () => localStorage.getItem('token') || '';
 
   useEffect(() =>{
-    if (!token()) return navigate('/login');
+    const role = localStorage.getItem('user_role');
+    if (!token() || role !== 'student') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user_role');
+      navigate('/login');
+      return;
+    }
     fetch(`${API_URL}/elections/`, { headers: { Authorization: `Bearer ${token()}` } })
       .then(r => r.ok ? r.json() : [])
       .then(setElections)
@@ -66,7 +72,7 @@ const CandidateDashboard: React.FC = () => {
         </div>
         <div className="db-nav-right">
           <div className="db-badge"><span className="db-badge-dot" /> CANDIDATE PORTAL</div>
-          <button className="db-logout" onClick={() => { localStorage.removeItem('token'); navigate('/login'); }}>LOGOUT</button>
+          <button className="db-logout" onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('user_role'); navigate('/login'); }}>LOGOUT</button>
         </div>
       </nav>
 

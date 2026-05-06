@@ -49,11 +49,20 @@ const AdminDashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!localStorage.getItem('token')) return navigate('/login');
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('user_role');
+    
+    if (!token || role !== 'admin') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user_role');
+      navigate('/login');
+      return;
+    }
+    
     if (activeTab === 'students') fetchStudents();
     else if (activeTab === 'elections') fetchElections();
     else if (activeTab === 'candidates') fetchPending();
-  }, [activeTab]);
+  }, [activeTab, navigate]);
 
   const handleCreateElection = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,12 +115,11 @@ const AdminDashboard: React.FC = () => {
       {/* Nav */}
       <nav className="db-nav">
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button className="db-back-btn" onClick={() => navigate(-1)}>← BACK</button>
           <span className="db-nav-brand">VOTE<span>ZONE</span></span>
         </div>
         <div className="db-nav-right">
           <div className="db-badge"><span className="db-badge-dot" /> ADMIN UPLINK</div>
-          <button className="db-logout" onClick={() => { localStorage.removeItem('token'); navigate('/login'); }}>
+          <button className="db-logout" onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('user_role'); navigate('/login'); }}>
             LOGOUT
           </button>
         </div>
