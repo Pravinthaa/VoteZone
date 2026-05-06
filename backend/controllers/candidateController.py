@@ -1,7 +1,10 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import joinedload
+
 from fastapi import HTTPException, UploadFile
 from db.models.candidate import Candidate, CandidateStatus
 from db.models.election import Election, ElectionStatus
+from db.models.student import Student
 import os
 import uuid
 import shutil
@@ -69,7 +72,15 @@ def get_candidates_for_election(db: Session, election_id: int):
     return candidates
 
 def get_pending_candidates(db: Session):
-    return db.query(Candidate).filter(Candidate.status == CandidateStatus.pending).all()
+    return (
+        db.query(Candidate)
+        .join(Student)
+        .filter(Candidate.status == CandidateStatus.pending)
+        .options(joinedload(Candidate.student))  # eagerly load student
+        .all()
+    )
+
+
 
 def approve_candidate(db: Session, candidate_id: int):
     candidate = db.query(Candidate).filter(Candidate.id == candidate_id).first()
@@ -79,3 +90,12 @@ def approve_candidate(db: Session, candidate_id: int):
     db.commit()
     db.refresh(candidate)
     return candidate
+
+
+def delete_candidate(db: Session, candidate_id: int):
+    candidate = db.query(Candidate).filter(Candidate.id == candidate_id).first()
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    db.delete(candidate)
+    db.commit()
+    return {"message": f"Candidate {candidate_id} deleted successfully"}

@@ -240,3 +240,15 @@ def get_live_candidate_counts(election_id: int, db: Session):
         })
 
     return {"election_id": election_id, "tally": tally}
+
+# ──────────────────────────────────────────────
+#  Delete
+# ──────────────────────────────────────────────
+
+def delete_admin(admin_id: int, db: Session):
+    admin = db.query(Admin).filter(Admin.id == admin_id).first()
+    if not admin:
+        raise HTTPException(status_code=404, detail="Admin not found")
+    db.delete(admin)
+    db.commit()
+    return {"message": f"Admin {admin_id} deleted successfully"}

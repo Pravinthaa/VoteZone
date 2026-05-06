@@ -30,3 +30,4 @@ def get_student_profile(id: int, user=Depends(get_current_user), db: Session = D
     if user["role"] == "student" and user["id"] != id:
         raise HTTPException(status_code=403, detail="Not authorized to view other students")
     return studentController.get_student(id, db)
+

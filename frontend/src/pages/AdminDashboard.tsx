@@ -78,11 +78,21 @@ const AdminDashboard: React.FC = () => {
     } catch { setError('Network error'); }
   };
 
+  
+
   const handleApprove = async (id: number) => {
     await fetch(`${API_URL}/candidates/${id}/approve`, {
       method: 'PUT', headers: { Authorization: `Bearer ${token()}` },
     });
     fetchPending();
+  };
+
+  const deleteElection = async (id: number) => {
+    await fetch(`${API_URL}/elections/delete/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token()}` },
+    });
+    fetchElections();
   };
 
   const tabs = [
@@ -174,6 +184,7 @@ const AdminDashboard: React.FC = () => {
                       <th>POSTS</th>
                       <th>START</th>
                       <th>END</th>
+                      <th>ACTION</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -184,6 +195,9 @@ const AdminDashboard: React.FC = () => {
                         <td style={{ color: '#7dd3fc', fontSize: '0.82rem' }}>{e.posts?.join(' · ')}</td>
                         <td style={{ color: 'rgba(125,211,252,0.55)', fontSize: '0.8rem' }}>{new Date(e.start_time).toLocaleString()}</td>
                         <td style={{ color: 'rgba(125,211,252,0.55)', fontSize: '0.8rem' }}>{new Date(e.end_time).toLocaleString()}</td>
+                        <td>
+                          <button className="db-btn db-btn-sm" style={{ background: 'rgba(239,68,68,0.2)', color: '#ef4444', borderColor: 'rgba(239,68,68,0.4)' }} onClick={() => deleteElection(e.id)}>DELETE</button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

@@ -17,7 +17,7 @@ const CandidateDashboard: React.FC = () => {
 
   const token = () => localStorage.getItem('token') || '';
 
-  useEffect(() => {
+  useEffect(() =>{
     if (!token()) return navigate('/login');
     fetch(`${API_URL}/elections/`, { headers: { Authorization: `Bearer ${token()}` } })
       .then(r => r.ok ? r.json() : [])

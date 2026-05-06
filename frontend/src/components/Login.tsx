@@ -176,7 +176,7 @@ const Login: React.FC = () => {
               {role === 'admin' ? (
                 <p>Initializing secure uplink...</p>
               ) : (
-                <div style={{ marginTop: '2.5rem' }}>
+                <div style={{ marginTop: '3.5rem' }}>
                   <div style={{
                     fontFamily: 'var(--font-display)',
                     fontSize: '0.6rem',
@@ -204,7 +204,7 @@ const Login: React.FC = () => {
                     fontWeight: 700,
                     letterSpacing: '5px',
                     color: 'rgba(56,189,248,0.35)'
-                  }}>VOTEZONE</div>
+                  }}></div>
                 </div>
               )}
             </div>

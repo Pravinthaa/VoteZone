@@ -2,13 +2,13 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from db.models.election import Election, ElectionStatus
 from schemas.election import ElectionCreate
-from datetime import datetime
+from datetime import datetime, timezone
 
 def create_election(db: Session, election_in: ElectionCreate):
     if election_in.end_time <= election_in.start_time:
         raise HTTPException(status_code=400, detail="End time must be after start time")
     
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)  # offset-aware UTC datetime
     status = ElectionStatus.upcoming
     if election_in.start_time <= now < election_in.end_time:
         status = ElectionStatus.active
@@ -39,3 +39,11 @@ def get_election(db: Session, election_id: int):
 def get_election_status(db: Session, election_id: int):
     election = get_election(db, election_id)
     return {"id": election.id, "status": election.status.value}
+
+def delete_election(db: Session, election_id: int):
+    election = db.query(Election).filter(Election.id == election_id).first()
+    if not election:
+        raise HTTPException(status_code=404, detail="Election not found")
+    db.delete(election)
+    db.commit()
+    return {"message": f"Election {election_id} deleted successfully"}

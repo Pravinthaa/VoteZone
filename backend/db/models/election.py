@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, DateTime, Enum as SqlEnum, JSON
+
+from sqlalchemy import Column, Integer, String, DateTime, Enum as SqlEnum, ARRAY, Text  
 from sqlalchemy.orm import relationship
 from enum import Enum
 from db.base import Base
@@ -17,7 +18,8 @@ class Election(Base):
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=False)
     status = Column(SqlEnum(ElectionStatus), default=ElectionStatus.upcoming)
-    posts = Column(JSON, default=list)
+    posts = Column(ARRAY(Text), default=list)
+
 
     results_status = Column(String, default="pending")   # pending, declared
     publish_date = Column(DateTime, nullable=True)

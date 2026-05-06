@@ -47,3 +47,11 @@ def get_all_students(db: Session):
     if not students:
         raise HTTPException(status_code=404, detail="No students found")
     return students
+
+def delete_student(student_id: int, db: Session):
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    db.delete(student)
+    db.commit()
+    return {"message": f"Student {student_id} deleted successfully"}

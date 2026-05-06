@@ -77,3 +77,11 @@ def get_voters(id: int, db: Session = Depends(get_db)):
 @router.get("/elections/{id}/non-voters", summary="List students who have NOT voted")
 def get_non_voters(id: int, db: Session = Depends(get_db)):
     return adminController.get_non_voters(id, db)
+
+# ──────────────────────────────────────────────
+#  Delete
+# ──────────────────────────────────────────────
+
+@router.delete("/{admin_id}", summary="Delete an admin")
+def delete_admin(admin_id: int, db: Session = Depends(get_db)):
+    return adminController.delete_admin(admin_id, db)
