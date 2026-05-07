@@ -213,7 +213,6 @@ def get_non_voters(election_id: int, db: Session):
 # ──────────────────────────────────────────────
 
 def get_live_candidate_counts(election_id: int, db: Session):
-    """Real-time per-candidate vote tally for admin monitoring."""
     election = db.query(Election).filter(Election.id == election_id).first()
     if not election:
         raise HTTPException(status_code=404, detail="Election not found")
@@ -233,14 +232,12 @@ def get_live_candidate_counts(election_id: int, db: Session):
             if candidate else None
         )
         tally.append({
-            "candidate_id": candidate_id,
+            "candidate_name": student.name if student else "Unknown",  # renamed
             "post": post,
-            "student_name": student.name if student else "Unknown",
-            "vote_count": count,
+            "votes": count,                                             # renamed
         })
 
-    return {"election_id": election_id, "tally": tally}
-
+    return {"tally": tally}  # drop election_id, frontend doesn't need it
 # ──────────────────────────────────────────────
 #  Delete
 # ──────────────────────────────────────────────

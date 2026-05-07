@@ -41,7 +41,7 @@ const VoterDashboard: React.FC = () => {
     fetch(`${API_URL}/candidates/${selectedElection}`, { headers: { Authorization: `Bearer ${token()}` } })
       .then(r => r.ok ? r.json() : [])
       .then(setCandidates)
-      .catch(() => {});
+      .catch((jj) => {});
 
     fetch(`${API_URL}/votes/${selectedElection}/results`, { headers: { Authorization: `Bearer ${token()}` } })
       .then(r => r.ok ? r.json() : null)
@@ -162,14 +162,15 @@ const VoterDashboard: React.FC = () => {
                             ? <img src={`${API_URL}/uploads/${c.photo_path}`} alt="Photo" className="db-candidate-photo" />
                             : <div className="db-candidate-photo-placeholder">⬡</div>}
                           <div className="db-candidate-info">
-                            <span className="db-candidate-post">{c.post}</span>
-                            <span className="db-candidate-id">Candidate #{c.id}</span>
-                            {c.resume_path &&
-                              <a href={`${API_URL}/uploads/${c.resume_path}`} target="_blank" rel="noreferrer"
-                                className="db-btn db-btn-sm" style={{ textDecoration: 'none', display: 'inline-block', marginTop: '0.4rem' }}>
-                                MANIFESTO
-                              </a>}
-                          </div>
+  <span className="db-candidate-post">{c.post}</span>
+  <span className="db-candidate-name">{c.student_name ?? '—'}</span>
+  <span className="db-candidate-roll">{c.student_roll_no?.toUpperCase() ?? '—'}</span>
+  {c.resume_path &&
+    <a href={`${API_URL}/uploads/${c.resume_path}`} target="_blank" rel="noreferrer"
+      className="db-btn db-btn-sm" style={{ textDecoration: 'none', display: 'inline-block', marginTop: '0.4rem' }}>
+      MANIFESTO
+    </a>}
+</div>
                         </div>
                       ))}
                     </div>}

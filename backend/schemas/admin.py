@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List
 from datetime import datetime
 
 class AdminCreate(BaseModel):
@@ -15,6 +16,15 @@ class AdminOut(BaseModel):
 
     class Config:
         from_attributes = True   
+
+class TallyEntry(BaseModel):
+    candidate_name: str
+    post: str
+    votes: int
+
+class LiveCountsResponse(BaseModel):
+    tally: List[TallyEntry]
+
 
 class ElectionDurationUpdate(BaseModel):
     start_time: datetime

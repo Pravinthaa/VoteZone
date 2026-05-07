@@ -10,27 +10,23 @@ router = APIRouter(prefix="/votes", tags=["Votes"])
 
 @router.post("/cast", response_model=VoteOut)
 async def cast_new_vote(
-    vote_in: VoteCreate,
+    vote_in: VoteCreate, 
     db: Session = Depends(get_db),
-    user=Depends(require_role("student")),
+    user = Depends(require_role("student"))
 ):
-    return await cast_vote(vote_in, db, student_id=user["id"])
-
+    # Enforce that the student_id matches the authenticated user
+    vote_in.student_id = user["id"]
+    return await cast_vote(vote_in, db)
 
 @router.get("/{election_id}/results")
-def get_results(
-    election_id: int,
-    db: Session = Depends(get_db),
-    user=Depends(require_role("student")),
-):
+def read_election_results(election_id: int, db: Session = Depends(get_db)):
     return get_results(election_id, db)
-
 
 @router.websocket("/live/{election_id}")
 async def live_participation(websocket: WebSocket, election_id: int):
     await manager.connect(websocket, election_id)
     try:
         while True:
-            await websocket.receive_text()
-    except (WebSocketDisconnect, Exception):
+            data = await websocket.receive_text()
+    except WebSocketDisconnect:
         manager.disconnect(websocket, election_id)

@@ -5,6 +5,19 @@
    ═══════════════════════════════════════════════════ */
 
 /* ── Layout ─────────────────────────────────────── */
+
+.db-table-wrap {
+  overflow-y: auto;
+  max-height: 340px;    /* header ~60px + this = ~400px total card height */
+}
+
+.db-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: rgba(3,7,18,0.95);   }
+
+
 .db-layout {
   position: fixed;
   inset: 0;
@@ -157,6 +170,7 @@
 .db-body {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
   padding: 2rem 2.5rem;
   display: flex;
   flex-direction: column;

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from controllers import adminController
 from db.session import get_db
-from schemas.admin import AdminCreate, AdminLogin, ElectionDurationUpdate
+from schemas.admin import AdminCreate, AdminLogin, ElectionDurationUpdate,LiveCountsResponse
 
 router = APIRouter(prefix="/admins", tags=["Admins"])
 
@@ -38,6 +38,8 @@ def reject_candidate(id: int, db: Session = Depends(get_db)):
 # ──────────────────────────────────────────────
 #  Election Management
 # ──────────────────────────────────────────────
+
+
 
 @router.put("/elections/{id}/duration", summary="Update election start/end time")
 def update_election_duration(
@@ -85,3 +87,12 @@ def get_non_voters(id: int, db: Session = Depends(get_db)):
 @router.delete("/{admin_id}", summary="Delete an admin")
 def delete_admin(admin_id: int, db: Session = Depends(get_db)):
     return adminController.delete_admin(admin_id, db)
+
+
+@router.get(
+    "/elections/{id}/live-counts",
+    response_model=LiveCountsResponse,
+    summary="Per-candidate vote tally for an election",
+)
+def get_live_counts(id: int, db: Session = Depends(get_db)):
+    return adminController.get_live_candidate_counts(id, db)

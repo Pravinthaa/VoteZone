@@ -43,4 +43,4 @@ socket_app = socketio.ASGIApp(sio, other_asgi_app=app)
 
 if __name__ == "__main__":
     # Run socket_app (not app) so Socket.IO and REST share the same port
-    uvicorn.run("main:socket_app", host="127.0.0.1", port=5000, reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
