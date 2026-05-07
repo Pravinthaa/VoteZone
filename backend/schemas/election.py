@@ -11,6 +11,14 @@ class ElectionBase(BaseModel):
 class ElectionCreate(ElectionBase):
     pass
 
+class ElectionUpdate(BaseModel):
+    name: Optional[str] = None
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
+    posts: Optional[list[str]] = None
+    status: Optional[str] = None
+
+    
 class ElectionOut(ElectionBase):
     id: int
     status: str

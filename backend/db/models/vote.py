@@ -11,9 +11,9 @@ class Vote(Base):
     id = Column(Integer, primary_key=True, index=True)
     student_id = Column(Integer, ForeignKey("students.id"))
     election_id = Column(Integer, ForeignKey("elections.id"))
-    candidate_id = Column(Integer, ForeignKey("candidates.id"))
+    candidate_id = Column(Integer, ForeignKey("candidates.id", ondelete="CASCADE"))
     post = Column(String, nullable=False)
-    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
 
     student = relationship("Student", back_populates="votes")
     election = relationship("Election", back_populates="votes")

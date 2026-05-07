@@ -24,5 +24,5 @@ class Election(Base):
     results_status = Column(String, default="pending")   # pending, declared
     publish_date = Column(DateTime(timezone=True), nullable=True)
 
-    candidates = relationship("Candidate", back_populates="election")
+    candidates = relationship("Candidate", back_populates="election",cascade="all, delete-orphan")
     votes = relationship("Vote", back_populates="election")

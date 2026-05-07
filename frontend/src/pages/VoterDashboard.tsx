@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './dashboard.css';
+import PieChart from '../components/piechart';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 const WS_URL = API_URL.replace('http', 'ws');
@@ -64,22 +65,48 @@ const VoterDashboard: React.FC = () => {
   }, [selectedElection, elections]);
 
   const handleVote = async (post: string) => {
-    setVoteMsg(''); setVoteErr('');
-    const candidateId = selectedVotes[post];
-    if (!candidateId) return setVoteErr(`Select a candidate for: ${post}`);
-    try {
-      const res = await fetch(`${API_URL}/votes/cast`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
-        body: JSON.stringify({ election_id: parseInt(selectedElection), candidate_id: candidateId, post }),
-      });
-      if (res.ok) setVoteMsg(`Vote cast for ${post}`);
-      else {
+  setVoteMsg('');
+  setVoteErr('');
+
+  const candidateId = selectedVotes[post];
+  if (!candidateId) {
+    setVoteErr(`Select a candidate for: ${post}`);
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/votes/cast`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token()}`
+      },
+      body: JSON.stringify({
+        election_id: parseInt(selectedElection),
+        candidate_id: candidateId,
+        post
+      }),
+    });
+
+    if (res.ok) {
+      setVoteMsg(`Vote cast for ${post}`);
+      // Optionally clear selection after success
+      setSelectedVotes(prev => ({ ...prev, [post]: '' }));
+    } else {
+      let errMsg = 'Vote failed';
+      try {
         const d = await res.json();
-        setVoteErr(d.detail || 'Vote failed');
+        if (d.detail) errMsg = d.detail;
+      } catch {
+        errMsg = await res.text();
       }
-    } catch { setVoteErr('Network error'); }
-  };
+      setVoteErr(errMsg);
+    }
+  } catch {
+    setVoteErr('Network error');
+  }
+};
+
 
   const sel = elections.find(e => e.id.toString() === selectedElection);
   const isActive = sel?.status === 'active';
@@ -153,13 +180,7 @@ const VoterDashboard: React.FC = () => {
         {/* ── VOTING / RESULTS ── */}
         {activeTab === 'vote' && (
           <>
-            {/* Live counter */}
-            {isActive && liveVotes !== null && (
-              <div className="db-live-counter">
-                <span className="db-badge-dot" style={{ background: '#34d399' }} />
-                LIVE PARTICIPATION — {liveVotes} VOTES CAST
-              </div>
-            )}
+
 
             {voteMsg && <div className="db-success">{voteMsg}</div>}
             {voteErr && <div className="db-error">{voteErr}</div>}
@@ -171,18 +192,67 @@ const VoterDashboard: React.FC = () => {
               <div className="db-card">
                 <div className="db-card-header">FINAL RESULTS</div>
                 <div className="db-card-body">
-                  {Object.entries(results.results).map(([post, list]: [string, any]) => (
-                    <div key={post} style={{ marginBottom: '1.5rem' }}>
-                      <div style={{ fontFamily: 'var(--font-display)', fontSize: '0.7rem', letterSpacing: '2px',
-                        color: 'var(--accent-main)', marginBottom: '0.6rem' }}>{post}</div>
-                      {list.map((r: any) => (
-                        <div key={r.candidate_id} className="db-result-row">
-                          <span>Candidate #{r.candidate_id}</span>
-                          <span className="db-result-votes">{r.votes} VOTES</span>
-                        </div>
-                      ))}
-                    </div>
-                  ))}
+{Object.entries(results.results).map(([post, list]: [string, any]) => {
+  const sorted = [...list].sort((a: any, b: any) => b.votes - a.votes);
+  const totalVotes = sorted.reduce((sum: number, r: any) => sum + r.votes, 0);
+  const chartId = `pie-${post.replace(/\s+/g, '-')}`;
+
+  return (
+    <div key={post} style={{ marginBottom: '2rem' }}>
+      <div style={{
+        fontFamily: 'var(--font-display)', fontSize: '0.7rem', letterSpacing: '2px',
+        color: 'var(--accent-main)', marginBottom: '0.8rem'
+      }}>
+        {post}
+        <span style={{ marginLeft: '1rem', color: 'var(--text-muted)', fontSize: '0.65rem' }}>
+          ({totalVotes} TOTAL VOTES)
+        </span>
+      </div>
+
+      <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        {/* Candidate rows */}
+        <div style={{ flex: 1, minWidth: 200 }}>
+          {sorted.map((r: any, idx: number) => {
+            const pct = totalVotes > 0 ? Math.round((r.votes / totalVotes) * 100) : 0;
+            return (
+              <div key={r.candidate_id} className="db-result-row"
+                style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0.3rem', marginBottom: '0.6rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {idx === 0 && totalVotes > 0 && (
+                      <span style={{
+                        fontSize: '0.6rem', background: 'var(--accent-main)', color: '#000',
+                        padding: '0.1rem 0.4rem', borderRadius: '2px',
+                        fontFamily: 'var(--font-display)', letterSpacing: '1px'
+                      }}>WINNER</span>
+                    )}
+                    Candidate #{r.candidate_id}
+                  </span>
+                  <span className="db-result-votes">{r.votes} VOTES ({pct}%)</span>
+                </div>
+                <div style={{ height: '4px', background: 'var(--border-color)', borderRadius: '2px', overflow: 'hidden' }}>
+                  <div style={{
+                    height: '100%', width: `${pct}%`,
+                    background: idx === 0 ? 'var(--accent-main)' : 'var(--text-muted)',
+                    borderRadius: '2px', transition: 'width 0.6s ease'
+                  }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Pie chart */}
+        {totalVotes > 0 && (
+          <div style={{ width: 160, height: 160, flexShrink: 0 }}>
+            <PieChart candidates={sorted} totalVotes={totalVotes} chartId={chartId} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+})}
+
                 </div>
               </div>
             )}

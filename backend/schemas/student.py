@@ -11,6 +11,7 @@ class StudentBase(BaseModel):
     year: int
     email: EmailStr
 
+    
     @field_validator("email")
     def validate_email(cls, v, info):
         roll_no = info.data.get("roll_no")   # ✅ use info.data instead of values.get
