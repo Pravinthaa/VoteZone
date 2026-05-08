@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from db.models.vote import Vote
+from db.models.student import Student
 from db.models.election import Election, ElectionStatus
 from db.models.candidate import Candidate, CandidateStatus
 from schemas.vote import VoteCreate
@@ -76,3 +77,22 @@ def get_results(election_id: int, db: Session):
         })
     
     return {"election_id": election_id, "results": results}
+
+# voteController.py
+def get_my_votes(election_id: int, current_user, db: Session):
+    votes = (
+        db.query(Vote)
+        .filter(Vote.election_id == election_id, Vote.student_id == current_user.id)
+        .all()
+    )
+    result = []
+    for v in votes:
+        candidate = db.query(Candidate).filter(Candidate.id == v.candidate_id).first()
+        student = db.query(Student).filter(Student.id == candidate.student_id).first() if candidate else None
+        result.append({
+            "post": v.post,
+            "candidate_id": v.candidate_id,
+            "candidate_name": student.name if student else "Unknown",
+            "candidate_roll_no": student.roll_no if student else "—",
+        })
+    return result

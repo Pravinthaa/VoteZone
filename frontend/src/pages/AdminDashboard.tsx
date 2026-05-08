@@ -66,7 +66,7 @@ const AdminDashboard: React.FC = () => {
   const [pendingCandidates, setPendingCandidates] = useState<Candidate[]>([]);
   const [allCandidates, setAllCandidates] = useState<Candidate[]>([]);
   const [error, setError] = useState('');
-  const [newElection, setNewElection] = useState({ name: '', start_time: '', end_time: '', posts: '' });
+  const [newElection, setNewElection] = useState({ name: '', start_time: '', end_time: '', posts: '' , publish_date: ''});
 
   // ── Voters / Non-voters / Live-counts state ───────────────────────────────
   const [selectedElectionId, setSelectedElectionId] = useState<number | ''>('');
@@ -185,10 +185,12 @@ const AdminDashboard: React.FC = () => {
           start_time: new Date(newElection.start_time).toISOString(),
           end_time: new Date(newElection.end_time).toISOString(),
           posts: newElection.posts.split(',').map(p => p.trim()).filter(Boolean),
-        }),
+          publish_date: newElection.publish_date
+    ? new Date(newElection.publish_date).toISOString()
+    : null, }),
       });
       if (res.ok) {
-        setNewElection({ name: '', start_time: '', end_time: '', posts: '' });
+        setNewElection({ name: '', start_time: '', end_time: '', posts: '', publish_date: '' });
         fetchElections();
       } else {
         const d = await res.json();
@@ -283,6 +285,12 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleDeleteStudent = async (id: number) => {
+  if (!confirm('Delete this student? This cannot be undone.')) return;
+  await fetch(`${API_URL}/students/${id}`, { method: 'DELETE', headers: authHeaders() });
+  fetchStudents();
+};
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user_role');
@@ -343,8 +351,10 @@ const AdminDashboard: React.FC = () => {
         {activeTab === 'elections' && (
   <>
     <div className="db-card">
-      <div className="db-card-header">INITIALIZE NEW ELECTION</div>
-      <div className="db-card-body" style={{ overflowY: 'auto', maxHeight: '340px' }}>
+      <div className="db-card-header" style={{ position: 'sticky', top: 0, zIndex: 2, background: 'rgba(3,7,18,0.95)' }}>
+        INITIALIZE NEW ELECTION
+      </div>
+      <div className="db-card-body" style={{ overflowY: 'auto', maxHeight: '230px' }}>
         <form className="db-form" onSubmit={handleCreateElection}>
           <div className="db-grid-2">
             <div className="db-field">
@@ -372,13 +382,21 @@ const AdminDashboard: React.FC = () => {
                 onChange={e => setNewElection({ ...newElection, end_time: e.target.value })} />
             </div>
           </div>
+
+          <div className="db-field" style={{ marginTop: '0.4rem' }}>
+            <label className="db-label">RESULTS PUBLISH DATE</label>
+            <input className="db-input" type="datetime-local"
+              value={newElection.publish_date}
+              onChange={e => setNewElection({ ...newElection, publish_date: e.target.value })} />
+          </div>
+
           <button type="submit" className="db-btn db-btn-full">CREATE ELECTION</button>
         </form>
       </div>
     </div>
 
     <div className="db-card">
-      <div className="db-card-header">
+      <div className="db-card-header" style={{ position: 'sticky', top: 0, zIndex: 2, background: 'rgba(3,7,18,0.95)' }}>
         ALL ELECTIONS
         <span style={{ marginLeft: 'auto', fontFamily: 'Electrolize', fontSize: '0.7rem', color: 'rgba(125,211,252,0.5)', fontWeight: 400, letterSpacing: 1 }}>
           {elections.length} record{elections.length !== 1 ? 's' : ''}
@@ -387,7 +405,7 @@ const AdminDashboard: React.FC = () => {
       {elections.length === 0 ? (
         <div className="db-empty">No elections created yet</div>
       ) : (
-        <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
+        <div style={{ overflowY: 'auto', maxHeight: '350px' }}>
           <table className="db-table">
             <thead>
               <tr>
@@ -636,39 +654,48 @@ const AdminDashboard: React.FC = () => {
 
         {/* ── STUDENTS ── */}
         {activeTab === 'students' && (
-          <div className="db-card">
-            <div className="db-card-header">
-              STUDENT REGISTRY
-              <span style={{ marginLeft: 'auto', fontFamily: 'Electrolize', fontSize: '0.7rem', color: 'rgba(125,211,252,0.5)', fontWeight: 400, letterSpacing: 1 }}>
-                {students.length} registered
-              </span>
-            </div>
-            {students.length === 0 ? (
-              <div className="db-empty">No students registered yet</div>
-            ) : (
-              <table className="db-table">
-                <thead>
-                  <tr><th>ID</th><th>NAME</th><th>ROLL NO</th><th>YEAR</th><th>ROLE</th></tr>
-                </thead>
-                <tbody>
-                  {students.map(s => (
-                    <tr key={s.id}>
-                      <td style={{ color: 'rgba(125,211,252,0.55)', fontFamily: 'Rajdhani', fontWeight: 600 }}>#{s.id}</td>
-                      <td style={{ fontWeight: 600, color: '#e0f2fe' }}>{s.name}</td>
-                      <td style={{ fontFamily: 'Rajdhani', fontWeight: 700, fontSize: '0.82rem', color: '#7dd3fc', letterSpacing: '1px' }}>{s.roll_no.toUpperCase()}</td>
-                      <td style={{ color: 'rgba(125,211,252,0.6)' }}>Year {s.year}</td>
-                      <td>
-                        <span className={`db-pill ${s.is_candidate ? 'db-pill-red' : 'db-pill-green'}`}>
-                          {s.is_candidate ? 'CANDIDATE' : 'VOTER'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        )}
+  <div className="db-card">
+    <div className="db-card-header">
+      STUDENT REGISTRY
+      <span style={{ marginLeft: 'auto', fontFamily: 'Electrolize', fontSize: '0.7rem', color: 'rgba(125,211,252,0.5)', fontWeight: 400, letterSpacing: 1 }}>
+        {students.length} registered
+      </span>
+    </div>
+    {students.length === 0 ? (
+      <div className="db-empty">No students registered yet</div>
+    ) : (
+      <table className="db-table">
+        <thead>
+          <tr><th>ID</th><th>NAME</th><th>ROLL NO</th><th>YEAR</th><th>ROLE</th><th>ACTION</th></tr>
+        </thead>
+        <tbody>
+          {students.map(s => (
+            <tr key={s.id}>
+              <td style={{ color: 'rgba(125,211,252,0.55)', fontFamily: 'Rajdhani', fontWeight: 600 }}>#{s.id}</td>
+              <td style={{ fontWeight: 600, color: '#e0f2fe' }}>{s.name}</td>
+              <td style={{ fontFamily: 'Rajdhani', fontWeight: 700, fontSize: '0.82rem', color: '#7dd3fc', letterSpacing: '1px' }}>{s.roll_no.toUpperCase()}</td>
+              <td style={{ color: 'rgba(125,211,252,0.6)' }}>Year {s.year}</td>
+              <td>
+                <span className={`db-pill ${s.is_candidate ? 'db-pill-red' : 'db-pill-green'}`}>
+                  {s.is_candidate ? 'CANDIDATE' : 'VOTER'}
+                </span>
+              </td>
+              <td>
+                <button
+                  className="db-btn db-btn-sm"
+                  style={{ background: 'rgba(239,68,68,0.2)', color: '#ef4444', borderColor: 'rgba(239,68,68,0.4)' }}
+                  onClick={() => handleDeleteStudent(s.id)}
+                >
+                  DELETE
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )}
+  </div>
+)}
 
         {/* ── VOTERS ── */}
         {activeTab === 'voters' && (

@@ -44,13 +44,13 @@ const CanvasBackground = () => {
 
     const init = () => {
       particlesArray = [];
-      let num = (canvas.width * canvas.height) / 12000;
+      const num = (canvas.width * canvas.height) / 12000;
       for (let i = 0; i < num; i++) {
-        let size = Math.random() * 1.5 + 0.5;
-        let x = Math.random() * canvas.width;
-        let y = Math.random() * canvas.height;
-        let dx = (Math.random() - 0.5) * 1.0;
-        let dy = (Math.random() - 0.5) * 1.0;
+        const size = Math.random() * 1.5 + 0.5;
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        const dx = (Math.random() - 0.5) * 1.0;
+        const dy = (Math.random() - 0.5) * 1.0;
         particlesArray.push(new Particle(x, y, dx, dy, size));
       }
     };
@@ -58,9 +58,11 @@ const CanvasBackground = () => {
     const connect = () => {
       for (let a = 0; a < particlesArray.length; a++) {
         for (let b = a; b < particlesArray.length; b++) {
-          let dist = ((particlesArray[a].x - particlesArray[b].x) ** 2) + ((particlesArray[a].y - particlesArray[b].y) ** 2);
+          const dist =
+            (particlesArray[a].x - particlesArray[b].x) ** 2 +
+            (particlesArray[a].y - particlesArray[b].y) ** 2;
           if (dist < (canvas.width / 10) * (canvas.height / 10)) {
-            let opacity = 1 - (dist / 15000);
+            const opacity = 1 - dist / 15000;
             ctx!.strokeStyle = `rgba(56, 189, 248, ${opacity * 0.3})`;
             ctx!.lineWidth = 1;
             ctx!.beginPath();
@@ -99,7 +101,7 @@ const Register: React.FC = () => {
     year: '',
     email: '',
     password: '',
-    confirm_password: ''
+    confirm_password: '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -114,19 +116,31 @@ const Register: React.FC = () => {
     setIsLoading(true);
     setError(null);
 
-    // Frontend Validations to match Backend constraints
+    // Year validation
+    const yearNum = parseInt(formData.year);
+    if (isNaN(yearNum) || yearNum < 1 || yearNum > 4) {
+      setError('Year must be between 1 and 4');
+      setIsLoading(false);
+      return;
+    }
+
+    // Roll No format
     const rollRegex = /^[0-9]{2}[a-zA-Z]{1,2}[0-9]{3}$/;
     if (!rollRegex.test(formData.roll_no)) {
       setError('Invalid Roll No format (e.g., 21z223)');
       setIsLoading(false);
       return;
     }
+
+    // Email must match roll no
     const expectedEmail = `${formData.roll_no}@psgtech.ac.in`.toLowerCase();
     if (formData.email.toLowerCase() !== expectedEmail) {
       setError(`Email must be ${expectedEmail}`);
       setIsLoading(false);
       return;
     }
+
+    // Password match
     if (formData.password !== formData.confirm_password) {
       setError('Passwords do not match');
       setIsLoading(false);
@@ -140,15 +154,17 @@ const Register: React.FC = () => {
         body: JSON.stringify({
           name: formData.name,
           roll_no: formData.roll_no,
-          year: parseInt(formData.year),
+          year: yearNum,
           email: formData.email,
-          password: formData.password
+          password: formData.password,
         }),
       });
+
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
         throw new Error(errData.detail || 'Registration Failed');
       }
+
       setSuccess(true);
       setTimeout(() => navigate('/login'), 2000);
     } catch (err: any) {
@@ -161,12 +177,14 @@ const Register: React.FC = () => {
   return (
     <div className="csea-layout">
       <CanvasBackground />
-      
+
       <div className="cyber-ring ring-1"></div>
       <div className="cyber-ring ring-2"></div>
 
-      <div className="csea-container" style={{ width: '480px', height: 'auto', minHeight: '500px', padding: '2.5rem 2rem' }}>
-        
+      <div
+        className="csea-container"
+        style={{ width: '480px', height: 'auto', minHeight: '500px', padding: '2.5rem 2rem' }}
+      >
         <div className="panel-header" style={{ marginBottom: '2rem' }}>
           <h1 className="glitch-title" style={{ fontSize: '1.8rem' }}>REGISTRATION</h1>
           <div className="status-indicator">
@@ -183,11 +201,11 @@ const Register: React.FC = () => {
             </div>
           ) : (
             <form className="cyber-form" onSubmit={handleSubmit} style={{ gap: '1.2rem' }}>
-              
+
               <div className="input-box">
                 <i className="ri-user-3-line input-icon"></i>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
@@ -199,8 +217,8 @@ const Register: React.FC = () => {
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <div className="input-box" style={{ flex: 2 }}>
                   <i className="ri-terminal-box-line input-icon"></i>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     name="roll_no"
                     value={formData.roll_no}
                     onChange={handleChange}
@@ -210,14 +228,20 @@ const Register: React.FC = () => {
                 </div>
                 <div className="input-box" style={{ flex: 1 }}>
                   <i className="ri-calendar-line input-icon"></i>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     name="year"
                     value={formData.year}
-                    onChange={handleChange}
+                    onChange={e => {
+                      const val = e.target.value;
+                      // only allow empty (mid-type) or 1–4
+                      if (val === '' || (Number(val) >= 1 && Number(val) <= 4)) {
+                        setFormData({ ...formData, year: val });
+                      }
+                    }}
                     placeholder="YEAR"
                     min="1"
-                    max="5"
+                    max="4"
                     required
                   />
                 </div>
@@ -225,8 +249,8 @@ const Register: React.FC = () => {
 
               <div className="input-box">
                 <i className="ri-mail-line input-icon"></i>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
@@ -237,8 +261,8 @@ const Register: React.FC = () => {
 
               <div className="input-box">
                 <i className="ri-lock-password-line input-icon"></i>
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
@@ -249,8 +273,8 @@ const Register: React.FC = () => {
 
               <div className="input-box">
                 <i className="ri-lock-password-fill input-icon"></i>
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   name="confirm_password"
                   value={formData.confirm_password}
                   onChange={handleChange}
@@ -265,12 +289,28 @@ const Register: React.FC = () => {
                 </div>
               )}
 
-              <button type="submit" className="cyber-btn" disabled={isLoading} style={{ marginTop: '0' }}>
+              <button
+                type="submit"
+                className="cyber-btn"
+                disabled={isLoading}
+                style={{ marginTop: '0' }}
+              >
                 {isLoading ? 'CREATING...' : 'ESTABLISH PROFILE'}
               </button>
 
               <div style={{ textAlign: 'center', marginTop: '0.5rem' }}>
-                <Link to="/login" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.85rem', letterSpacing: '1px', transition: 'color 0.3s' }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-main)'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
+                <Link
+                  to="/login"
+                  style={{
+                    color: 'var(--text-muted)',
+                    textDecoration: 'none',
+                    fontSize: '0.85rem',
+                    letterSpacing: '1px',
+                    transition: 'color 0.3s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-main)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+                >
                   [ RETURN TO LOGIN TERMINAL ]
                 </Link>
               </div>

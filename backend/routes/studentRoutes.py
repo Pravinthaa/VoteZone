@@ -31,3 +31,6 @@ def get_student_profile(id: int, user=Depends(get_current_user), db: Session = D
         raise HTTPException(status_code=403, detail="Not authorized to view other students")
     return studentController.get_student(id, db)
 
+@router.delete("/{id}")
+def delete_student(id: int, db: Session = Depends(get_db), user=Depends(require_role("admin"))):
+    return studentController.delete_student(id, db)

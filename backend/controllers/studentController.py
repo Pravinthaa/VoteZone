@@ -55,3 +55,4 @@ def delete_student(student_id: int, db: Session):
     db.delete(student)
     db.commit()
     return {"message": f"Student {student_id} deleted successfully"}
+
